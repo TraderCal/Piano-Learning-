@@ -859,6 +859,65 @@ footer a:hover { color: var(--gold); }
 .bk-success-body { font-size: 14px; color: var(--text-dim); font-weight: 300; line-height: 1.7; }
 .bk-error { background: rgba(240,123,138,0.1); border: 1px solid rgba(240,123,138,0.3); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: var(--rose); display: none; }
 @media (max-width: 560px) { .bk-row { grid-template-columns: 1fr; } }
+
+/* ── SHOP ───────────────────────────────────────────────────────────────── */
+.sh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding: 24px; }
+.sh-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.sh-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,0.4), 0 0 0 1px var(--gold-dim); }
+.sh-card-thumb {
+  background: linear-gradient(135deg, #1a1e2e, #252b3b);
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.sh-card-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 60%, rgba(232,200,122,0.1), transparent 70%);
+}
+.sh-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sh-card-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: var(--gold-glow);
+  border: 1px solid rgba(232,200,122,0.2);
+  border-radius: 20px;
+  padding: 3px 10px;
+  width: fit-content;
+}
+.sh-card-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text); line-height: 1.2; }
+.sh-card-desc { font-size: 13px; color: var(--text-dim); font-weight: 300; line-height: 1.65; flex: 1; }
+.sh-card-footer { padding: 0 20px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sh-price { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--gold); }
+.sh-buy {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--gold); color: #0d0f14;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  padding: 10px 18px; border-radius: 8px;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.sh-buy:hover { opacity: 0.88; transform: translateY(-1px); }
+.sh-empty { text-align: center; padding: 60px 24px; color: var(--text-dim); font-size: 14px; font-weight: 300; }
+.sh-header { padding: 20px 24px 0; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+.sh-header p { font-size: 13px; color: var(--text-dim); font-weight: 300; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -1177,6 +1236,42 @@ footer a:hover { color: var(--gold); }
   </div>
 </div>
 
+<!-- SHOP MODAL -->
+<div class="tool-modal" id="shopModal" onclick="handleShopModalClick(event)">
+  <div class="tool-modal-inner" style="max-width:800px">
+    <div class="tool-modal-bar">
+      <div class="tool-modal-title">
+        <div class="tool-modal-dot" style="background:var(--teal)"></div>
+        Shop — Piano408 Studios
+      </div>
+      <button class="tool-modal-close" onclick="closeShop()">Close &nbsp;<kbd>Esc</kbd></button>
+    </div>
+    <div class="tool-modal-frame" style="overflow-y:auto">
+      <div class="sh-header">
+        <div class="sh-card-tag">Digital Downloads</div>
+        <p>Instant download after purchase. All products delivered directly to your inbox.</p>
+      </div>
+      <div class="sh-grid">
+
+        <!-- Product: Introduction to Piano Workbook -->
+        <div class="sh-card">
+          <div class="sh-card-thumb">📘</div>
+          <div class="sh-card-body">
+            <span class="sh-card-tag">eBook</span>
+            <div class="sh-card-title">Introduction to Piano Workbook</div>
+            <p class="sh-card-desc">A structured workbook for new piano students and teachers. Covers foundational concepts, exercises, and guided lessons to build confident beginners from day one.</p>
+          </div>
+          <div class="sh-card-footer">
+            <div class="sh-price">$10</div>
+            <a class="sh-buy" href="https://piano408.gumroad.com/l/gifaks" target="_blank" rel="noopener">Buy Now →</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- BOOKING MODAL -->
 <div class="tool-modal" id="bookingModal" onclick="handleBookingModalClick(event)">
   <div class="tool-modal-inner" style="max-width:680px">
@@ -1376,6 +1471,11 @@ footer a:hover { color: var(--gold); }
         <a href="#" class="nav-item" onclick="openEarTraining(event)"><span class="nav-icon">🎧</span> Ear Training</a>
         <a href="#" class="nav-item" onclick="openVideoLibrary(event)"><span class="nav-icon">📹</span> Video Library</a>
         <a href="#" class="nav-item" onclick="openPracticeGuide(event)"><span class="nav-icon">📝</span> Practice Guides</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Shop</div>
+        <a href="#" class="nav-item" onclick="openShop(event)"><span class="nav-icon">🛍️</span> Digital Products</a>
       </div>
 
       <div class="nav-section">
@@ -2279,11 +2379,26 @@ function handleModalClick(e) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeChordAcademy(); closeEarTraining(); closeScaleExplorer(); closeCircleOf5ths(); closeSheetMusic();
-    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking();
+    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking(); closeShop();
   }
 });
 
 // ── BOOKING MODAL ─────────────────────────────────────────────────────────
+function openShop(e) {
+  if (e) e.preventDefault();
+  document.getElementById('shopModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar && sidebar.classList.contains('open')) toggleSidebar();
+}
+function closeShop() {
+  document.getElementById('shopModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleShopModalClick(e) {
+  if (e.target === document.getElementById('shopModal')) closeShop();
+}
+
 function openBooking(e) {
   if (e) e.preventDefault();
   document.getElementById('bookingModal').classList.add('open');
