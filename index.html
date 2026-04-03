@@ -966,6 +966,79 @@ footer a:hover { color: var(--gold); }
 .sh-empty { text-align: center; padding: 60px 24px; color: var(--text-dim); font-size: 14px; font-weight: 300; }
 .sh-header { padding: 20px 24px 0; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
 .sh-header p { font-size: 13px; color: var(--text-dim); font-weight: 300; margin-top: 4px; }
+
+/* ── ANIMATIONS ─────────────────────────────────────────────────────────── */
+
+/* Hero entrance — staggered fade + slide up */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-eyebrow { animation: heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both; }
+.hero-title   { animation: heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.25s both; }
+.hero-desc    { animation: heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.4s both; }
+.hero-actions { animation: heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.55s both; }
+
+/* Floating hero piano keys */
+@keyframes keysFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+.hero-keys { animation: keysFloat 9s ease-in-out infinite; }
+
+/* Gold shimmer on brand name */
+@keyframes shimmer {
+  0%   { background-position: -300% center; }
+  100% { background-position: 300% center; }
+}
+.brand-name span {
+  background: linear-gradient(90deg, var(--gold) 0%, #fff8dc 40%, var(--gold) 60%, var(--gold-dim) 100%);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 5s linear infinite;
+}
+
+/* Sidebar CTA subtle pulse */
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,200,122,0.0); }
+  50%       { box-shadow: 0 0 0 5px rgba(232,200,122,0.08); }
+}
+.sidebar-cta { animation: ctaPulse 3.5s ease-in-out infinite; }
+
+/* Scroll reveal base state */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* Button ripple */
+.btn-primary, .btn-secondary, .btn-cta-small, .sh-buy {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  transform: scale(0);
+  animation: rippleAnim 0.6s linear forwards;
+  pointer-events: none;
+}
+@keyframes rippleAnim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* Music card hover — colored border glow using accent */
+.music-card:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--card-accent, var(--gold));
+}
+
+/* Proof card stagger */
+.proof-card { transition: transform 0.2s, opacity 0.65s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s; }
 </style>
 </head>
 <body>
@@ -2668,6 +2741,59 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     }
   });
 });
+
+// ── SCROLL REVEAL ──────────────────────────────────────────────────────────
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // Elements to reveal on scroll
+    const selectors = [
+      '.music-card', '.reason-item', '.proof-card',
+      '.section-eyebrow', '.section-title', '.section-lead',
+      '.music-quote', '.tool-card', '.cta-card', '.sh-card'
+    ];
+    document.querySelectorAll(selectors.join(',')).forEach(function(el) {
+      el.classList.add('reveal');
+      // Stagger siblings of the same type within the same parent
+      const siblings = Array.from(el.parentElement.children).filter(function(c) {
+        return c.classList.contains('music-card') ||
+               c.classList.contains('reason-item') ||
+               c.classList.contains('proof-card');
+      });
+      const idx = siblings.indexOf(el);
+      if (idx > 0) el.style.transitionDelay = (idx * 0.08) + 's';
+    });
+
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(function(el) {
+      observer.observe(el);
+    });
+
+    // ── BUTTON RIPPLE ───────────────────────────────────────────────────────
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.btn-primary, .btn-secondary, .btn-cta-small, .sh-buy, .pr-btn');
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+      const ripple = document.createElement('span');
+      ripple.className = 'btn-ripple';
+      ripple.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + x + 'px;top:' + y + 'px;';
+      btn.appendChild(ripple);
+      setTimeout(function() { ripple.remove(); }, 650);
+    });
+
+  });
+})();
 </script>
 </body>
 </html>
