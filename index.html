@@ -190,7 +190,7 @@ body::after {
   opacity: 0.04; pointer-events: none;
   display: flex; align-items: flex-end;
 }
-.hk { height: 70%; flex: 1; background: var(--text); border-radius: 4px 4px 0 0; margin: 0 2px; }
+.hk { height: 70%; flex: 1; background: var(--text); border-radius: 0 0 4px 4px; margin: 0 2px; }
 .hk:nth-child(even) { height: 45%; background: var(--text-mute); }
 .hero::before {
   content: '';
@@ -303,7 +303,7 @@ section + section { border-top: 1px solid var(--border); }
   background: linear-gradient(to bottom, var(--gold) 0%, #a07828 100%);
   box-shadow: 0 0 14px rgba(232,200,122,0.5), 2px 5px 12px rgba(0,0,0,0.4);
 }
-.mock-fallboard { height: 10px; background: linear-gradient(to bottom, #252838, #1a1d2a); margin: 0 -18px; border-top: 1px solid #1a1d2a; }
+.mock-fallboard { height: 12px; background: linear-gradient(to bottom, #1a1d2a, #252838); margin: 0 -18px; border-bottom: 1px solid #3a3d52; }
 .piano-caption { text-align: center; padding: 14px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-mute); letter-spacing: 0.15em; text-transform: uppercase; }
 .piano-visual { position: relative; }
 .piano-glow { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); width: 200px; height: 60px; background: var(--gold); border-radius: 50%; filter: blur(40px); opacity: 0.12; pointer-events: none; }
@@ -1769,6 +1769,7 @@ footer a:hover { color: var(--gold); }
         </div>
         <div class="piano-visual">
           <div class="piano-mockup">
+            <div class="mock-fallboard"></div>
             <div class="mock-keys">
               <div class="mk-w gold"></div><div class="mk-b"></div>
               <div class="mk-w gold"></div><div class="mk-b gold"></div>
@@ -1779,7 +1780,6 @@ footer a:hover { color: var(--gold); }
               <div class="mk-w"></div><div class="mk-b gold"></div>
               <div class="mk-w"></div>
             </div>
-            <div class="mock-fallboard"></div>
             <div class="piano-caption">Cmaj9 — C E G B D</div>
           </div>
           <div class="piano-glow"></div>
