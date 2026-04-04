@@ -267,15 +267,44 @@ section + section { border-top: 1px solid var(--border); }
 /* ── WHY PIANO ──────────────────────────────────────────────────────────── */
 .why-piano-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
 .piano-mockup {
-  background: #111318; border: 1px solid #2a2d38; border-radius: 14px;
-  padding: 28px 20px 0; box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden;
+  background: linear-gradient(to bottom, #1c1f2e 0%, #141720 100%);
+  border: 1px solid #2e3348;
+  border-radius: 16px 16px 20px 20px;
+  padding: 22px 18px 0;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7), 0 2px 0 rgba(255,255,255,0.04) inset;
+  overflow: hidden;
 }
-.mock-keys { display: flex; gap: 3px; align-items: flex-end; }
-.mk-w { flex: 1; height: 90px; background: #f0ede6; border-radius: 0 0 5px 5px; min-width: 0; }
-.mk-w.gold { background: var(--gold); }
-.mk-b { width: 60%; height: 55px; background: #1a1c24; border-radius: 0 0 4px 4px; margin: 0 -30% 0 -30%; position: relative; z-index: 2; flex-shrink: 0; }
-.mk-b.gold { background: var(--gold); }
-.piano-caption { text-align: center; padding: 16px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-mute); letter-spacing: 0.15em; text-transform: uppercase; }
+.mock-keys { display: flex; gap: 3px; align-items: flex-end; position: relative; }
+.mk-w {
+  flex: 1; height: 120px;
+  background: linear-gradient(to bottom, #f5f2ea 0%, #e8e4d8 80%, #cec9b8 100%);
+  border-radius: 0 0 6px 6px;
+  border: 1px solid #b0ab9a; border-top: none;
+  min-width: 0; position: relative;
+  box-shadow: inset -1px 0 0 rgba(0,0,0,0.08), inset 0 -3px 5px rgba(0,0,0,0.1);
+}
+.mk-w::after { content:''; position:absolute; top:0; left:0; right:0; height:35%; background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent); pointer-events:none; }
+.mk-w.gold {
+  background: linear-gradient(to bottom, #fff3c0 0%, var(--gold) 30%, #c49a30 100%);
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(232,200,122,0.6), inset 0 -3px 5px rgba(0,0,0,0.15);
+}
+.mk-b {
+  width: 62%; height: 74px;
+  background: linear-gradient(to bottom, #2e3042 0%, #1c1e28 55%, #12141c 100%);
+  border-radius: 0 0 5px 5px;
+  margin: 0 -31% 0 -31%;
+  position: relative; z-index: 2; flex-shrink: 0;
+  border: 1px solid #3e4258; border-top: none;
+  box-shadow: 2px 5px 12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.mk-b::after { content:''; position:absolute; top:0; left:2px; right:2px; height:30%; background: linear-gradient(to bottom, rgba(255,255,255,0.06), transparent); pointer-events:none; }
+.mk-b.gold {
+  background: linear-gradient(to bottom, var(--gold) 0%, #a07828 100%);
+  box-shadow: 0 0 14px rgba(232,200,122,0.5), 2px 5px 12px rgba(0,0,0,0.4);
+}
+.mock-fallboard { height: 10px; background: linear-gradient(to bottom, #252838, #1a1d2a); margin: 0 -18px; border-top: 1px solid #1a1d2a; }
+.piano-caption { text-align: center; padding: 14px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-mute); letter-spacing: 0.15em; text-transform: uppercase; }
 .piano-visual { position: relative; }
 .piano-glow { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); width: 200px; height: 60px; background: var(--gold); border-radius: 50%; filter: blur(40px); opacity: 0.12; pointer-events: none; }
 .piano-reasons { display: flex; flex-direction: column; gap: 20px; }
@@ -1750,6 +1779,7 @@ footer a:hover { color: var(--gold); }
               <div class="mk-w"></div><div class="mk-b gold"></div>
               <div class="mk-w"></div>
             </div>
+            <div class="mock-fallboard"></div>
             <div class="piano-caption">Cmaj9 — C E G B D</div>
           </div>
           <div class="piano-glow"></div>
