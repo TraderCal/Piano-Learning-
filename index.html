@@ -1032,6 +1032,47 @@ footer a:hover { color: var(--gold); }
 .sh-header { padding: 20px 24px 0; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
 .sh-header p { font-size: 13px; color: var(--text-dim); font-weight: 300; margin-top: 4px; }
 
+/* ── INTERVAL TRAINER (it-) ──────────────────────────────────────────────── */
+.it-app { max-width: 680px; margin: 0 auto; padding: 28px 24px 48px; font-family: 'Outfit', sans-serif; }
+.it-header { text-align: center; margin-bottom: 28px; }
+.it-eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: var(--teal); text-transform: uppercase; margin-bottom: 10px; }
+.it-title { font-family: 'DM Serif Display', serif; font-size: clamp(22px, 4vw, 32px); color: var(--text); line-height: 1.2; margin-bottom: 8px; }
+.it-subtitle { font-size: 13px; color: var(--text-dim); font-weight: 300; }
+.it-mode-tabs { display: flex; gap: 8px; margin-bottom: 24px; background: var(--bg); border-radius: 10px; padding: 4px; border: 1px solid var(--border); }
+.it-mode-tab { flex: 1; padding: 9px; border: none; border-radius: 7px; background: transparent; color: var(--text-dim); font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.it-mode-tab.active { background: var(--surface2); color: var(--teal); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.it-score-bar { display: flex; gap: 12px; margin-bottom: 24px; }
+.it-score-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.it-score-num { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--teal); line-height: 1; }
+.it-score-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 4px; }
+.it-play-area { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 28px 24px; text-align: center; margin-bottom: 20px; }
+.it-play-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--teal); color: #0d0f14; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; margin-bottom: 20px; }
+.it-play-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.it-play-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.it-question { font-size: 14px; color: var(--text-dim); font-weight: 300; margin-bottom: 6px; }
+.it-hint { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-mute); }
+.it-answers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.it-answer-btn { padding: 13px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.18s; text-align: left; }
+.it-answer-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); background: rgba(78,205,196,0.06); }
+.it-answer-btn.correct { background: rgba(78,205,196,0.15); border-color: var(--teal); color: var(--teal); }
+.it-answer-btn.wrong { background: rgba(240,123,138,0.12); border-color: var(--rose); color: var(--rose); }
+.it-answer-btn.reveal { background: rgba(78,205,196,0.08); border-color: var(--teal); color: var(--teal); opacity: 0.7; }
+.it-answer-btn:disabled { cursor: default; }
+.it-feedback { margin-top: 18px; padding: 14px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; display: none; }
+.it-feedback.correct { background: rgba(78,205,196,0.12); border: 1px solid rgba(78,205,196,0.3); color: var(--teal); }
+.it-feedback.wrong { background: rgba(240,123,138,0.1); border: 1px solid rgba(240,123,138,0.3); color: var(--rose); }
+.it-next-btn { display: none; margin: 16px auto 0; padding: 11px 28px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.it-next-btn:hover { border-color: var(--teal); color: var(--teal); }
+.it-ref-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
+.it-ref-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.it-ref-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.it-ref-example { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--teal); margin-bottom: 4px; }
+.it-ref-song { font-size: 12px; color: var(--text-dim); font-weight: 300; }
+.it-difficulty { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+.it-diff-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; cursor: pointer; transition: all 0.15s; }
+.it-diff-btn.active { border-color: var(--teal); color: var(--teal); background: rgba(78,205,196,0.08); }
+@media (max-width: 480px) { .it-answers { grid-template-columns: 1fr; } .it-ref-grid { grid-template-columns: 1fr; } }
+
 /* ── ANIMATIONS ─────────────────────────────────────────────────────────── */
 
 /* Hero entrance — staggered fade + slide up */
@@ -1422,6 +1463,20 @@ footer a:hover { color: var(--gold); }
   </div>
 </div>
 
+<!-- INTERVAL TRAINER MODAL -->
+<div class="tool-modal" id="intervalModal" onclick="handleIntervalModalClick(event)">
+  <div class="tool-modal-inner" style="max-width:740px">
+    <div class="tool-modal-bar">
+      <div class="tool-modal-title">
+        <div class="tool-modal-dot" style="background:var(--teal)"></div>
+        Interval Trainer — Piano408 Studios
+      </div>
+      <button class="tool-modal-close" onclick="closeIntervalTrainer()">Close &nbsp;<kbd>Esc</kbd></button>
+    </div>
+    <div id="interval-mount" class="tool-modal-frame" style="overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- SHOP MODAL -->
 <div class="tool-modal" id="shopModal" onclick="handleShopModalClick(event)">
   <div class="tool-modal-inner" style="max-width:800px">
@@ -1661,6 +1716,7 @@ footer a:hover { color: var(--gold); }
         </a>
         <a href="#" class="nav-item" onclick="openScaleExplorer(event)"><span class="nav-icon">🎵</span> Scale Explorer</a>
         <a href="#" class="nav-item" onclick="openCircleOf5ths(event)"><span class="nav-icon">🎼</span> Circle of 5ths</a>
+        <a href="#" class="nav-item" onclick="openIntervalTrainer(event)"><span class="nav-icon">🎶</span> Interval Trainer</a>
       </div>
 
       <div class="nav-section">
@@ -2581,11 +2637,209 @@ function handleModalClick(e) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeChordAcademy(); closeEarTraining(); closeScaleExplorer(); closeCircleOf5ths(); closeSheetMusic();
-    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking(); closeShop();
+    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking(); closeShop(); closeIntervalTrainer();
   }
 });
 
 // ── BOOKING MODAL ─────────────────────────────────────────────────────────
+// ── INTERVAL TRAINER ───────────────────────────────────────────────────────
+(function() {
+  const INTERVALS = [
+    { name:'Unison',        semis:0,  abbr:'P1',  song:'Same note played twice' },
+    { name:'Minor 2nd',     semis:1,  abbr:'m2',  song:'"Jaws" theme' },
+    { name:'Major 2nd',     semis:2,  abbr:'M2',  song:'"Happy Birthday" (first two notes)' },
+    { name:'Minor 3rd',     semis:3,  abbr:'m3',  song:'"Smoke on the Water"' },
+    { name:'Major 3rd',     semis:4,  abbr:'M3',  song:'"When the Saints Go Marching In"' },
+    { name:'Perfect 4th',   semis:5,  abbr:'P4',  song:'"Here Comes the Bride"' },
+    { name:'Tritone',       semis:6,  abbr:'TT',  song:'"The Simpsons" theme' },
+    { name:'Perfect 5th',   semis:7,  abbr:'P5',  song:'"Star Wars" theme' },
+    { name:'Minor 6th',     semis:8,  abbr:'m6',  song:'"The Entertainer" (opening)' },
+    { name:'Major 6th',     semis:9,  abbr:'M6',  song:'"My Bonnie Lies Over the Ocean"' },
+    { name:'Minor 7th',     semis:10, abbr:'m7',  song:'"Somewhere" (West Side Story)' },
+    { name:'Major 7th',     semis:11, abbr:'M7',  song:'"Take On Me" (chorus)' },
+    { name:'Octave',        semis:12, abbr:'P8',  song:'"Somewhere Over the Rainbow"' },
+  ];
+
+  const DIFFICULTY = {
+    easy:   [0,2,4,5,7,9,12],
+    medium: [0,2,3,4,5,7,9,10,12],
+    hard:   INTERVALS.map(i=>i.semis)
+  };
+
+  let mode = 'listen', difficulty = 'easy', score = 0, total = 0, streak = 0;
+  let currentInterval = null, audioCtx = null, answered = false;
+
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function playNote(freq, start, duration, ctx, dest) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(dest);
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(0.35, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+    osc.start(start); osc.stop(start + duration + 0.05);
+  }
+
+  function playInterval(semitones, harmonic) {
+    const ctx = getAudioCtx();
+    const base = 261.63; // C4
+    const top  = base * Math.pow(2, semitones / 12);
+    const now  = ctx.currentTime + 0.05;
+    if (harmonic) {
+      playNote(base, now, 1.2, ctx, ctx.destination);
+      playNote(top,  now, 1.2, ctx, ctx.destination);
+    } else {
+      playNote(base, now,       1.0, ctx, ctx.destination);
+      playNote(top,  now + 0.6, 1.0, ctx, ctx.destination);
+    }
+  }
+
+  function getPool() {
+    const semis = DIFFICULTY[difficulty];
+    return INTERVALS.filter(i => semis.includes(i.semis));
+  }
+
+  function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function getWrongAnswers(correct, pool, count) {
+    const others = pool.filter(i => i.semis !== correct.semis);
+    const shuffled = others.sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  }
+
+  function render() {
+    const mount = document.getElementById('interval-mount');
+    if (!mount) return;
+    const pool = getPool();
+    currentInterval = pickRandom(pool);
+    answered = false;
+
+    const wrongAnswers = getWrongAnswers(currentInterval, pool, 3);
+    const allAnswers = [currentInterval, ...wrongAnswers].sort(() => Math.random() - 0.5);
+
+    const refCards = INTERVALS.filter(i => getPool().map(p=>p.semis).includes(i.semis)).map(i => `
+      <div class="it-ref-card">
+        <div class="it-ref-name">${i.name} <span style="color:var(--text-mute);font-size:11px;font-family:'DM Mono',monospace">${i.abbr}</span></div>
+        <div class="it-ref-example">${i.semis} semitone${i.semis!==1?'s':''}</div>
+        <div class="it-ref-song">${i.song}</div>
+      </div>`).join('');
+
+    mount.innerHTML = `
+    <div class="it-app">
+      <div class="it-header">
+        <div class="it-eyebrow">Ear Training</div>
+        <h2 class="it-title">Interval Trainer</h2>
+        <p class="it-subtitle">Train your ear to recognize musical intervals by sound</p>
+      </div>
+      <div class="it-mode-tabs">
+        <button class="it-mode-tab${mode==='listen'?' active':''}" onclick="itSetMode('listen')">🎧 Listen & Identify</button>
+        <button class="it-mode-tab${mode==='harmonic'?' active':''}" onclick="itSetMode('harmonic')">🎼 Harmonic</button>
+        <button class="it-mode-tab${mode==='ref'?' active':''}" onclick="itSetMode('ref')">📖 Reference</button>
+      </div>
+      <div class="it-difficulty">
+        <button class="it-diff-btn${difficulty==='easy'?' active':''}" onclick="itSetDiff('easy')">EASY</button>
+        <button class="it-diff-btn${difficulty==='medium'?' active':''}" onclick="itSetDiff('medium')">MEDIUM</button>
+        <button class="it-diff-btn${difficulty==='hard'?' active':''}" onclick="itSetDiff('hard')">HARD</button>
+      </div>
+      ${mode !== 'ref' ? `
+      <div class="it-score-bar">
+        <div class="it-score-box"><div class="it-score-num" id="itScore">${score}</div><div class="it-score-label">Correct</div></div>
+        <div class="it-score-box"><div class="it-score-num" id="itTotal">${total}</div><div class="it-score-label">Total</div></div>
+        <div class="it-score-box"><div class="it-score-num" id="itStreak">${streak}🔥</div><div class="it-score-label">Streak</div></div>
+      </div>
+      <div class="it-play-area">
+        <button class="it-play-btn" id="itPlayBtn" onclick="itPlay()">▶ Play Interval</button>
+        <div class="it-question">What interval is this?</div>
+        <div class="it-hint">${mode==='harmonic'?'Both notes played together':'Notes played one after another'}</div>
+        <div class="it-feedback" id="itFeedback"></div>
+        <button class="it-next-btn" id="itNextBtn" onclick="itNext()">Next Interval →</button>
+      </div>
+      <div class="it-answers" id="itAnswers">
+        ${allAnswers.map(a => `
+          <button class="it-answer-btn" onclick="itAnswer(${a.semis}, this)">${a.name}<br><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mute)">${a.abbr} · ${a.semis} semitone${a.semis!==1?'s':''}</span></button>
+        `).join('')}
+      </div>` : `
+      <div class="it-ref-grid">${refCards}</div>`}
+    </div>`;
+  }
+
+  window.itSetMode = function(m) { mode = m; render(); };
+  window.itSetDiff = function(d) { difficulty = d; score = 0; total = 0; streak = 0; render(); };
+
+  window.itPlay = function() {
+    const btn = document.getElementById('itPlayBtn');
+    if (!currentInterval) return;
+    btn.disabled = true;
+    btn.textContent = '♪ Playing…';
+    playInterval(currentInterval.semis, mode === 'harmonic');
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = '▶ Play Again';
+    }, 1500);
+  };
+
+  window.itAnswer = function(semis, el) {
+    if (answered) return;
+    answered = true;
+    total++;
+    const correct = semis === currentInterval.semis;
+    if (correct) { score++; streak++; } else { streak = 0; }
+
+    // Update score display
+    const s = document.getElementById('itScore');
+    const t = document.getElementById('itTotal');
+    const st = document.getElementById('itStreak');
+    if (s) s.textContent = score;
+    if (t) t.textContent = total;
+    if (st) st.textContent = streak + '🔥';
+
+    // Color all buttons
+    document.querySelectorAll('.it-answer-btn').forEach(btn => {
+      btn.disabled = true;
+      const btnSemis = parseInt(btn.getAttribute('onclick').match(/\d+/)[0]);
+      if (btnSemis === currentInterval.semis) btn.classList.add('correct');
+    });
+    if (!correct) el.classList.add('wrong');
+
+    // Show feedback
+    const fb = document.getElementById('itFeedback');
+    const info = INTERVALS.find(i => i.semis === currentInterval.semis);
+    fb.className = 'it-feedback ' + (correct ? 'correct' : 'wrong');
+    fb.style.display = 'block';
+    fb.innerHTML = correct
+      ? `✓ Correct! <strong>${info.name}</strong> — "${info.song}"`
+      : `✗ That was a <strong>${info.name}</strong> — "${info.song}"`;
+
+    // Show next button
+    const nb = document.getElementById('itNextBtn');
+    if (nb) nb.style.display = 'block';
+  };
+
+  window.itNext = function() { render(); setTimeout(itPlay, 300); };
+
+  window.openIntervalTrainer = function(e) {
+    if (e) e.preventDefault();
+    document.getElementById('intervalModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) toggleSidebar();
+    render();
+  };
+  window.closeIntervalTrainer = function() {
+    document.getElementById('intervalModal').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  window.handleIntervalModalClick = function(e) {
+    if (e.target === document.getElementById('intervalModal')) closeIntervalTrainer();
+  };
+})();
+
 function openShop(e) {
   if (e) e.preventDefault();
   document.getElementById('shopModal').classList.add('open');
