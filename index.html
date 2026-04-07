@@ -1073,6 +1073,39 @@ footer a:hover { color: var(--gold); }
 .it-diff-btn.active { border-color: var(--teal); color: var(--teal); background: rgba(78,205,196,0.08); }
 @media (max-width: 480px) { .it-answers { grid-template-columns: 1fr; } .it-ref-grid { grid-template-columns: 1fr; } }
 
+/* ── SHEET MUSIC TUTOR (smt-) ────────────────────────────────────────────── */
+.smt-wrap { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 28px 20px 32px; font-family: 'Outfit', sans-serif; }
+.smt-top { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+.smt-clef-tabs { display: flex; gap: 8px; }
+.smt-tab { padding: 7px 20px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; cursor: pointer; transition: all 0.15s; }
+.smt-tab.active { border-color: var(--lavender); color: var(--lavender); background: rgba(167,139,250,0.1); }
+.smt-diff { display: flex; gap: 6px; }
+.smt-diff-btn { padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.07em; cursor: pointer; transition: all 0.15s; }
+.smt-diff-btn.active { border-color: var(--lavender); color: var(--lavender); background: rgba(167,139,250,0.08); }
+.smt-staff-wrap { position: relative; width: 100%; max-width: 460px; }
+.smt-staff-svg { width: 100%; border-radius: 10px; background: #fafafa; box-shadow: 0 2px 16px rgba(0,0,0,0.18); }
+.smt-question { font-size: 13px; color: var(--text-dim); text-align: center; letter-spacing: 0.04em; }
+.smt-answers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 420px; }
+.smt-ans-btn { padding: 14px 10px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text); font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
+.smt-ans-btn:hover:not(:disabled) { border-color: var(--lavender); color: var(--lavender); background: rgba(167,139,250,0.08); transform: translateY(-1px); }
+.smt-ans-btn.correct { border-color: var(--teal); color: var(--teal); background: rgba(78,205,196,0.12); }
+.smt-ans-btn.wrong { border-color: var(--rose); color: var(--rose); background: rgba(252,129,129,0.1); }
+.smt-ans-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+.smt-feedback { font-size: 14px; font-weight: 600; min-height: 22px; text-align: center; }
+.smt-feedback.good { color: var(--teal); }
+.smt-feedback.bad  { color: var(--rose); }
+.smt-score { display: flex; gap: 24px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-dim); }
+.smt-score-item { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.smt-score-val { font-size: 22px; font-weight: 700; color: var(--text); font-family: 'Outfit', sans-serif; }
+.smt-score-lbl { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.smt-mnemonic { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.18); border-radius: 10px; padding: 12px 18px; width: 100%; max-width: 420px; }
+.smt-mnemonic-title { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lavender); margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+.smt-mnemonic-row { font-size: 12px; color: var(--text-dim); line-height: 1.7; }
+.smt-mnemonic-row strong { color: var(--text); }
+.smt-next { padding: 10px 28px; border-radius: 24px; border: none; background: var(--lavender); color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: none; }
+.smt-next:hover { opacity: 0.88; transform: translateY(-1px); }
+@media (max-width: 480px) { .smt-answers { grid-template-columns: repeat(2, 1fr); } .smt-score { gap: 16px; } }
+
 /* ── ANIMATIONS ─────────────────────────────────────────────────────────── */
 
 /* Hero entrance — staggered fade + slide up */
@@ -1463,6 +1496,20 @@ footer a:hover { color: var(--gold); }
   </div>
 </div>
 
+<!-- SHEET MUSIC TUTOR MODAL -->
+<div class="tool-modal" id="smtModal" onclick="handleSmtModalClick(event)">
+  <div class="tool-modal-inner" style="max-width:600px">
+    <div class="tool-modal-bar">
+      <div class="tool-modal-title">
+        <div class="tool-modal-dot" style="background:var(--lavender)"></div>
+        Sheet Music Tutor — Piano408 Studios
+      </div>
+      <button class="tool-modal-close" onclick="closeSheetMusicTutor()">Close &nbsp;<kbd>Esc</kbd></button>
+    </div>
+    <div id="smt-mount" class="tool-modal-frame" style="overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- INTERVAL TRAINER MODAL -->
 <div class="tool-modal" id="intervalModal" onclick="handleIntervalModalClick(event)">
   <div class="tool-modal-inner" style="max-width:740px">
@@ -1717,6 +1764,7 @@ footer a:hover { color: var(--gold); }
         <a href="#" class="nav-item" onclick="openScaleExplorer(event)"><span class="nav-icon">🎵</span> Scale Explorer</a>
         <a href="#" class="nav-item" onclick="openCircleOf5ths(event)"><span class="nav-icon">🎼</span> Circle of 5ths</a>
         <a href="#" class="nav-item" onclick="openIntervalTrainer(event)"><span class="nav-icon">🎶</span> Interval Trainer</a>
+        <a href="#" class="nav-item" onclick="openSheetMusicTutor(event)"><span class="nav-icon">🎵</span> Sheet Music Tutor</a>
       </div>
 
       <div class="nav-section">
@@ -2637,7 +2685,7 @@ function handleModalClick(e) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeChordAcademy(); closeEarTraining(); closeScaleExplorer(); closeCircleOf5ths(); closeSheetMusic();
-    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking(); closeShop(); closeIntervalTrainer();
+    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking(); closeShop(); closeIntervalTrainer(); if(window.closeSheetMusicTutor) closeSheetMusicTutor();
   }
 });
 
@@ -2837,6 +2885,270 @@ document.addEventListener('keydown', e => {
   };
   window.handleIntervalModalClick = function(e) {
     if (e.target === document.getElementById('intervalModal')) closeIntervalTrainer();
+  };
+})();
+
+// ── SHEET MUSIC TUTOR ─────────────────────────────────────────────────────
+(function() {
+  // ---- Note data ---------------------------------------------------------
+  // Each note: { name, clef, y, ledger (bool), octave, ledgerY (y of ledger line if needed) }
+  // Staff lines in SVG are at y = 90, 74, 58, 42, 26 (bottom to top of treble staff)
+  // SVG viewBox = "0 0 340 140"
+
+  const TREBLE_NOTES = [
+    { name:'C', label:'C4', y:98,  ledger:true,  ledgerY:98  },  // middle C — ledger below
+    { name:'D', label:'D4', y:90,  ledger:false },               // first line
+    { name:'E', label:'E4', y:82,  ledger:false },               // first space
+    { name:'F', label:'F4', y:74,  ledger:false },               // second line
+    { name:'G', label:'G4', y:66,  ledger:false },               // second space
+    { name:'A', label:'A4', y:58,  ledger:false },               // third line
+    { name:'B', label:'B4', y:50,  ledger:false },               // third space
+    { name:'C', label:'C5', y:42,  ledger:false },               // fourth line
+    { name:'D', label:'D5', y:34,  ledger:false },               // fourth space
+    { name:'E', label:'E5', y:26,  ledger:false },               // fifth line
+    { name:'F', label:'F5', y:18,  ledger:false },               // above staff
+    { name:'G', label:'G5', y:10,  ledger:false },
+    { name:'A', label:'A5', y:2,   ledger:true,  ledgerY:2   },
+  ];
+
+  const BASS_NOTES = [
+    { name:'G', label:'G2', y:98,  ledger:false },
+    { name:'A', label:'A2', y:90,  ledger:false },               // first line
+    { name:'B', label:'B2', y:82,  ledger:false },
+    { name:'C', label:'C3', y:74,  ledger:false },               // second line
+    { name:'D', label:'D3', y:66,  ledger:false },
+    { name:'E', label:'E3', y:58,  ledger:false },               // third line
+    { name:'F', label:'F3', y:50,  ledger:false },
+    { name:'G', label:'G3', y:42,  ledger:false },               // fourth line
+    { name:'A', label:'A3', y:34,  ledger:false },
+    { name:'B', label:'B3', y:26,  ledger:false },               // fifth line
+    { name:'C', label:'C4', y:18,  ledger:true,  ledgerY:18  },  // middle C — ledger above
+    { name:'D', label:'D4', y:10,  ledger:false },
+    { name:'E', label:'E4', y:2,   ledger:true,  ledgerY:2   },
+  ];
+
+  const TREBLE_MNEMONICS = [
+    '<strong>Lines (bottom→top):</strong> Every Good Boy Does Fine (E G B D F)',
+    '<strong>Spaces (bottom→top):</strong> FACE (F A C E)',
+  ];
+  const BASS_MNEMONICS = [
+    '<strong>Lines (bottom→top):</strong> Good Boys Do Fine Always (G B D F A)',
+    '<strong>Spaces (bottom→top):</strong> All Cows Eat Grass (A C E G)',
+  ];
+
+  // ---- State -------------------------------------------------------------
+  let clef = 'treble';      // 'treble' | 'bass'
+  let difficulty = 'lines'; // 'lines' | 'spaces' | 'all'
+  let currentNote = null;
+  let answered = false;
+  let score = { correct: 0, total: 0, streak: 0 };
+
+  // ---- Helpers -----------------------------------------------------------
+  function getNotePool() {
+    const notes = clef === 'treble' ? TREBLE_NOTES : BASS_NOTES;
+    // line y values (bottom of staff = 90, lines every 16px going up)
+    const lineYs  = [90, 74, 58, 42, 26];
+    const spaceYs = [82, 66, 50, 34];
+    if (difficulty === 'lines')  return notes.filter(n => lineYs.includes(n.y));
+    if (difficulty === 'spaces') return notes.filter(n => spaceYs.includes(n.y) || lineYs.includes(n.y));
+    return notes; // all — including ledger
+  }
+
+  function pickNote() {
+    const pool = getNotePool();
+    if (pool.length === 0) return pool[0];
+    // Avoid repeating the same note twice in a row
+    let candidates = pool.filter(n => !currentNote || n.label !== currentNote.label);
+    if (candidates.length === 0) candidates = pool;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
+
+  function getChoices(correctNote) {
+    const allNames = ['A','B','C','D','E','F','G'];
+    const others = allNames.filter(n => n !== correctNote.name);
+    // shuffle and pick 3 wrong answers
+    for (let i = others.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [others[i], others[j]] = [others[j], others[i]];
+    }
+    const choices = [correctNote.name, ...others.slice(0, 3)];
+    // shuffle choices
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+    return choices;
+  }
+
+  // ---- SVG staff builder -------------------------------------------------
+  function buildStaffSVG(note) {
+    const W = 340, H = 130;
+    const lineYs = [90, 74, 58, 42, 26];
+    const noteX = 170; // center
+    const noteRx = 11, noteRy = 7.5;
+    const stemUp = note.y >= 58; // below mid-line → stem goes up
+    const stemX = stemUp ? noteX + noteRx - 1 : noteX - noteRx + 1;
+    const stemY1 = stemUp ? note.y - 4 : note.y + 4;
+    const stemY2 = stemUp ? note.y - 40 : note.y + 40;
+
+    let staffLines = lineYs.map(y =>
+      `<line x1="30" y1="${y}" x2="${W-30}" y2="${y}" stroke="#555" stroke-width="1.5"/>`
+    ).join('');
+
+    // Ledger lines (for notes outside the staff)
+    let ledgerLines = '';
+    if (note.ledger) {
+      // Middle C treble (y=98): ledger below staff
+      // Middle C bass (y=18): ledger above staff
+      // A5 treble (y=2): two ledger lines above
+      const ledgerX1 = noteX - 20, ledgerX2 = noteX + 20;
+      if (note.y > 90) { // below staff
+        for (let ly = 98; ly <= note.y; ly += 16) {
+          ledgerLines += `<line x1="${ledgerX1}" y1="${ly}" x2="${ledgerX2}" y2="${ly}" stroke="#555" stroke-width="1.5"/>`;
+        }
+      } else if (note.y < 26) { // above staff
+        for (let ly = 18; ly >= note.y; ly -= 16) {
+          ledgerLines += `<line x1="${ledgerX1}" y1="${ly}" x2="${ledgerX2}" y2="${ly}" stroke="#555" stroke-width="1.5"/>`;
+        }
+      }
+    }
+
+    // Clef symbol (simple text approximation)
+    const clefSvg = clef === 'treble'
+      ? `<text x="36" y="88" font-size="82" fill="#444" font-family="serif" style="font-style:italic">𝄞</text>`
+      : `<text x="36" y="76" font-size="52" fill="#444" font-family="serif">𝄢</text>`;
+
+    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="smt-staff-svg">
+  <rect width="${W}" height="${H}" fill="#fafafa" rx="10"/>
+  ${staffLines}
+  ${ledgerLines}
+  ${clefSvg}
+  <!-- note head -->
+  <ellipse cx="${noteX}" cy="${note.y}" rx="${noteRx}" ry="${noteRy}" fill="#7c3aed" opacity="0.92" transform="rotate(-15,${noteX},${note.y})"/>
+  <!-- stem -->
+  <line x1="${stemX}" y1="${stemY1}" x2="${stemX}" y2="${stemY2}" stroke="#7c3aed" stroke-width="2"/>
+</svg>`;
+  }
+
+  // ---- Render ------------------------------------------------------------
+  function render() {
+    const mount = document.getElementById('smt-mount');
+    if (!mount) return;
+
+    currentNote = pickNote();
+    answered = false;
+    const choices = getChoices(currentNote);
+    const mnemonics = clef === 'treble' ? TREBLE_MNEMONICS : BASS_MNEMONICS;
+
+    mount.innerHTML = `<div class="smt-wrap">
+      <div class="smt-top">
+        <div class="smt-clef-tabs">
+          <button class="smt-tab ${clef==='treble'?'active':''}" onclick="window._smtSetClef('treble')">Treble Clef</button>
+          <button class="smt-tab ${clef==='bass'?'active':''}" onclick="window._smtSetClef('bass')">Bass Clef</button>
+        </div>
+        <div class="smt-diff">
+          <button class="smt-diff-btn ${difficulty==='lines'?'active':''}" onclick="window._smtSetDiff('lines')">Lines Only</button>
+          <button class="smt-diff-btn ${difficulty==='spaces'?'active':''}" onclick="window._smtSetDiff('spaces')">Lines+Spaces</button>
+          <button class="smt-diff-btn ${difficulty==='all'?'active':''}" onclick="window._smtSetDiff('all')">All+Ledger</button>
+        </div>
+      </div>
+
+      <div class="smt-question">What note is shown on the staff?</div>
+
+      <div class="smt-staff-wrap">${buildStaffSVG(currentNote)}</div>
+
+      <div class="smt-answers" id="smt-answers">
+        ${choices.map(ch => `<button class="smt-ans-btn" onclick="window._smtAnswer('${ch}')">${ch}</button>`).join('')}
+      </div>
+
+      <div class="smt-feedback" id="smt-feedback"></div>
+      <button class="smt-next" id="smt-next" onclick="window._smtNext()">Next Note →</button>
+
+      <div class="smt-score">
+        <div class="smt-score-item"><div class="smt-score-val" id="smt-correct">${score.correct}</div><div class="smt-score-lbl">Correct</div></div>
+        <div class="smt-score-item"><div class="smt-score-val" id="smt-total">${score.total}</div><div class="smt-score-lbl">Total</div></div>
+        <div class="smt-score-item"><div class="smt-score-val" id="smt-streak">${score.streak}</div><div class="smt-score-lbl">Streak</div></div>
+      </div>
+
+      <div class="smt-mnemonic">
+        <div class="smt-mnemonic-title">Memory Helpers</div>
+        ${mnemonics.map(m => `<div class="smt-mnemonic-row">${m}</div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // ---- Answer handler ----------------------------------------------------
+  window._smtAnswer = function(chosen) {
+    if (answered) return;
+    answered = true;
+    score.total++;
+
+    const btns = document.querySelectorAll('.smt-ans-btn');
+    const correct = chosen === currentNote.name;
+    if (correct) { score.correct++; score.streak++; }
+    else { score.streak = 0; }
+
+    btns.forEach(btn => {
+      btn.disabled = true;
+      if (btn.textContent === currentNote.name) btn.classList.add('correct');
+      else if (btn.textContent === chosen && !correct) btn.classList.add('wrong');
+    });
+
+    const fb = document.getElementById('smt-feedback');
+    if (correct) {
+      const praise = ['Perfect!','That\'s right!','Excellent!','Correct!','Nice!'];
+      fb.textContent = praise[Math.floor(Math.random() * praise.length)] + ' That\'s ' + currentNote.label + '.';
+      fb.className = 'smt-feedback good';
+    } else {
+      fb.textContent = 'Not quite — that note is ' + currentNote.label + ' (' + currentNote.name + ').';
+      fb.className = 'smt-feedback bad';
+    }
+
+    document.getElementById('smt-correct').textContent = score.correct;
+    document.getElementById('smt-total').textContent   = score.total;
+    document.getElementById('smt-streak').textContent  = score.streak;
+
+    const nextBtn = document.getElementById('smt-next');
+    if (nextBtn) nextBtn.style.display = 'inline-block';
+  };
+
+  window._smtNext = function() {
+    render();
+  };
+
+  window._smtSetClef = function(c) {
+    clef = c;
+    currentNote = null;
+    render();
+  };
+
+  window._smtSetDiff = function(d) {
+    difficulty = d;
+    currentNote = null;
+    render();
+  };
+
+  // ---- Open / close ------------------------------------------------------
+  window.openSheetMusicTutor = function(e) {
+    if (e) e.preventDefault();
+    const modal = document.getElementById('smtModal');
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) toggleSidebar();
+    // Reset score on fresh open
+    score = { correct: 0, total: 0, streak: 0 };
+    currentNote = null;
+    render();
+  };
+
+  window.closeSheetMusicTutor = function() {
+    document.getElementById('smtModal').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  window.handleSmtModalClick = function(e) {
+    if (e.target === document.getElementById('smtModal')) window.closeSheetMusicTutor();
   };
 })();
 
