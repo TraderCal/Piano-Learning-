@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Piano408 Studios — Learn Piano with Purpose</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d0f14'/%3E%3Crect x='6' y='12' width='8' height='36' rx='2' fill='%23f5f2ea'/%3E%3Crect x='16' y='12' width='8' height='36' rx='2' fill='%23e8c87a'/%3E%3Crect x='26' y='12' width='8' height='36' rx='2' fill='%23f5f2ea'/%3E%3Crect x='36' y='12' width='8' height='36' rx='2' fill='%23e8c87a'/%3E%3Crect x='46' y='12' width='8' height='36' rx='2' fill='%23f5f2ea'/%3E%3Crect x='12' y='12' width='6' height='22' rx='2' fill='%231a1c24'/%3E%3Crect x='32' y='12' width='6' height='22' rx='2' fill='%231a1c24'/%3E%3Crect x='42' y='12' width='6' height='22' rx='2' fill='%231a1c24'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ── TOKENS ──────────────────────────────────────────────────────────────── */
@@ -164,12 +165,16 @@ body::after {
 
 .menu-toggle {
   display: none;
-  position: fixed; top: 16px; left: 16px; z-index: 200;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; width: 40px; height: 40px;
+  position: fixed; top: 14px; left: 14px; z-index: 200;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 10px; width: 44px; height: 44px;
   align-items: center; justify-content: center;
-  cursor: pointer; font-size: 18px; color: var(--text);
+  cursor: pointer; font-size: 20px; color: var(--text);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  transition: background 0.15s, border-color 0.15s;
 }
+.menu-toggle:hover { background: var(--surface2); border-color: var(--gold-dim); }
 
 /* ── MAIN ───────────────────────────────────────────────────────────────── */
 .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; }
@@ -382,19 +387,37 @@ footer a:hover { color: var(--gold); }
   .sidebar.open { transform: translateX(0); }
   .main { margin-left: 0; }
   .menu-toggle { display: flex; }
-  .hero { padding: 72px 28px 56px; }
-  section { padding: 56px 28px; }
+  .hero { padding: 80px 24px 56px; min-height: 80vh; }
+  .hero-title { font-size: clamp(32px, 9vw, 56px); }
+  .hero-desc { font-size: 15px; }
+  .hero-actions { flex-direction: column; gap: 10px; }
+  .hero-actions .btn-primary, .hero-actions .btn-secondary { text-align: center; justify-content: center; }
+  section { padding: 48px 24px; }
+  .section-title { font-size: clamp(24px, 6vw, 36px); }
   .why-piano-layout { grid-template-columns: 1fr; gap: 36px; }
+  .piano-visual { display: none; }
   .tool-card { grid-template-columns: 1fr; }
   .tool-preview { border-left: none; border-top: 1px solid var(--border); }
+  .tool-info { padding: 28px 24px; }
   .proof-grid { grid-template-columns: 1fr; }
-  .final-cta { padding: 56px 28px; }
-  footer { padding: 24px 28px; }
+  .final-cta { padding: 48px 24px; }
+  .cta-actions { flex-direction: column; align-items: center; }
+  footer { padding: 24px; flex-direction: column; text-align: center; }
   .hero-stats { gap: 20px; }
+  .sh-grid { grid-template-columns: 1fr; padding: 16px; }
+  .tool-modal-inner { height: 95vh; border-radius: 12px; }
+  .sidebar { width: 85vw; max-width: 300px; }
 }
 @media (max-width: 560px) {
   .music-grid { grid-template-columns: 1fr; }
-  .hero-stats { flex-wrap: wrap; }
+  .hero-stats { flex-wrap: wrap; gap: 16px; }
+  .hero { padding: 72px 20px 48px; }
+  section { padding: 40px 20px; }
+  .music-card { padding: 20px 18px; }
+  .btn-primary, .btn-secondary { padding: 13px 22px; font-size: 13px; width: 100%; justify-content: center; }
+  .tool-modal { padding: 10px; }
+  .tool-modal-inner { height: 98vh; border-radius: 10px; }
+  .brand-name { font-size: 19px; }
 }
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; }
 .sidebar-overlay.visible { display: block; }
