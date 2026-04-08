@@ -2895,36 +2895,40 @@ document.addEventListener('keydown', e => {
   // Staff lines in SVG are at y = 90, 74, 58, 42, 26 (bottom to top of treble staff)
   // SVG viewBox = "0 0 340 140"
 
+  // Treble clef lines (bottom→top): E4 G4 B4 D5 F5  — "Every Good Boy Does Fine"
+  // Treble clef spaces (bottom→top): F4 A4 C5 E5    — "FACE"
   const TREBLE_NOTES = [
-    { name:'C', label:'C4', y:98,  ledger:true,  ledgerY:98  },  // middle C — ledger below
-    { name:'D', label:'D4', y:90,  ledger:false },               // first line
-    { name:'E', label:'E4', y:82,  ledger:false },               // first space
-    { name:'F', label:'F4', y:74,  ledger:false },               // second line
-    { name:'G', label:'G4', y:66,  ledger:false },               // second space
-    { name:'A', label:'A4', y:58,  ledger:false },               // third line
-    { name:'B', label:'B4', y:50,  ledger:false },               // third space
-    { name:'C', label:'C5', y:42,  ledger:false },               // fourth line
-    { name:'D', label:'D5', y:34,  ledger:false },               // fourth space
-    { name:'E', label:'E5', y:26,  ledger:false },               // fifth line
-    { name:'F', label:'F5', y:18,  ledger:false },               // above staff
-    { name:'G', label:'G5', y:10,  ledger:false },
-    { name:'A', label:'A5', y:2,   ledger:true,  ledgerY:2   },
+    { name:'C', label:'C4', y:106, ledger:true  },  // middle C — ledger line below staff
+    { name:'D', label:'D4', y:98,  ledger:false },  // space below staff
+    { name:'E', label:'E4', y:90,  ledger:false },  // line 1 (bottom)
+    { name:'F', label:'F4', y:82,  ledger:false },  // space 1
+    { name:'G', label:'G4', y:74,  ledger:false },  // line 2
+    { name:'A', label:'A4', y:66,  ledger:false },  // space 2
+    { name:'B', label:'B4', y:58,  ledger:false },  // line 3 (middle)
+    { name:'C', label:'C5', y:50,  ledger:false },  // space 3
+    { name:'D', label:'D5', y:42,  ledger:false },  // line 4
+    { name:'E', label:'E5', y:34,  ledger:false },  // space 4
+    { name:'F', label:'F5', y:26,  ledger:false },  // line 5 (top)
+    { name:'G', label:'G5', y:18,  ledger:false },  // space above staff
+    { name:'A', label:'A5', y:10,  ledger:true  },  // ledger line above staff
   ];
 
+  // Bass clef lines (bottom→top): G2 B2 D3 F3 A3  — "Good Boys Do Fine Always"
+  // Bass clef spaces (bottom→top): A2 C3 E3 G3     — "All Cows Eat Grass"
   const BASS_NOTES = [
-    { name:'G', label:'G2', y:98,  ledger:false },
-    { name:'A', label:'A2', y:90,  ledger:false },               // first line
-    { name:'B', label:'B2', y:82,  ledger:false },
-    { name:'C', label:'C3', y:74,  ledger:false },               // second line
-    { name:'D', label:'D3', y:66,  ledger:false },
-    { name:'E', label:'E3', y:58,  ledger:false },               // third line
-    { name:'F', label:'F3', y:50,  ledger:false },
-    { name:'G', label:'G3', y:42,  ledger:false },               // fourth line
-    { name:'A', label:'A3', y:34,  ledger:false },
-    { name:'B', label:'B3', y:26,  ledger:false },               // fifth line
-    { name:'C', label:'C4', y:18,  ledger:true,  ledgerY:18  },  // middle C — ledger above
-    { name:'D', label:'D4', y:10,  ledger:false },
-    { name:'E', label:'E4', y:2,   ledger:true,  ledgerY:2   },
+    { name:'E', label:'E2', y:106, ledger:true  },  // ledger line below staff
+    { name:'F', label:'F2', y:98,  ledger:false },  // space below staff
+    { name:'G', label:'G2', y:90,  ledger:false },  // line 1 (bottom)
+    { name:'A', label:'A2', y:82,  ledger:false },  // space 1
+    { name:'B', label:'B2', y:74,  ledger:false },  // line 2
+    { name:'C', label:'C3', y:66,  ledger:false },  // space 2
+    { name:'D', label:'D3', y:58,  ledger:false },  // line 3 (middle)
+    { name:'E', label:'E3', y:50,  ledger:false },  // space 3
+    { name:'F', label:'F3', y:42,  ledger:false },  // line 4
+    { name:'G', label:'G3', y:34,  ledger:false },  // space 4
+    { name:'A', label:'A3', y:26,  ledger:false },  // line 5 (top)
+    { name:'B', label:'B3', y:18,  ledger:false },  // space above staff
+    { name:'C', label:'C4', y:10,  ledger:true  },  // middle C — ledger line above staff
   ];
 
   const TREBLE_MNEMONICS = [
@@ -2982,11 +2986,11 @@ document.addEventListener('keydown', e => {
 
   // ---- SVG staff builder -------------------------------------------------
   function buildStaffSVG(note) {
-    const W = 340, H = 130;
+    const W = 340, H = 145;
     const lineYs = [90, 74, 58, 42, 26];
     const noteX = 170; // center
     const noteRx = 11, noteRy = 7.5;
-    const stemUp = note.y >= 58; // below mid-line → stem goes up
+    const stemUp = note.y >= 58; // at or below middle line → stem goes up
     const stemX = stemUp ? noteX + noteRx - 1 : noteX - noteRx + 1;
     const stemY1 = stemUp ? note.y - 4 : note.y + 4;
     const stemY2 = stemUp ? note.y - 40 : note.y + 40;
@@ -2995,22 +2999,11 @@ document.addEventListener('keydown', e => {
       `<line x1="30" y1="${y}" x2="${W-30}" y2="${y}" stroke="#555" stroke-width="1.5"/>`
     ).join('');
 
-    // Ledger lines (for notes outside the staff)
+    // Ledger lines — drawn at the note's y position
     let ledgerLines = '';
     if (note.ledger) {
-      // Middle C treble (y=98): ledger below staff
-      // Middle C bass (y=18): ledger above staff
-      // A5 treble (y=2): two ledger lines above
-      const ledgerX1 = noteX - 20, ledgerX2 = noteX + 20;
-      if (note.y > 90) { // below staff
-        for (let ly = 98; ly <= note.y; ly += 16) {
-          ledgerLines += `<line x1="${ledgerX1}" y1="${ly}" x2="${ledgerX2}" y2="${ly}" stroke="#555" stroke-width="1.5"/>`;
-        }
-      } else if (note.y < 26) { // above staff
-        for (let ly = 18; ly >= note.y; ly -= 16) {
-          ledgerLines += `<line x1="${ledgerX1}" y1="${ly}" x2="${ledgerX2}" y2="${ly}" stroke="#555" stroke-width="1.5"/>`;
-        }
-      }
+      const ledgerX1 = noteX - 22, ledgerX2 = noteX + 22;
+      ledgerLines = `<line x1="${ledgerX1}" y1="${note.y}" x2="${ledgerX2}" y2="${note.y}" stroke="#555" stroke-width="1.5"/>`;
     }
 
     // Clef symbol (simple text approximation)
@@ -3018,7 +3011,7 @@ document.addEventListener('keydown', e => {
       ? `<text x="36" y="88" font-size="82" fill="#444" font-family="serif" style="font-style:italic">𝄞</text>`
       : `<text x="36" y="76" font-size="52" fill="#444" font-family="serif">𝄢</text>`;
 
-    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="smt-staff-svg">
+    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="smt-staff-svg" style="background:#fafafa;border-radius:10px">
   <rect width="${W}" height="${H}" fill="#fafafa" rx="10"/>
   ${staffLines}
   ${ledgerLines}
