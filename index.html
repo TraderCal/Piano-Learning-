@@ -1113,6 +1113,11 @@ footer a:hover { color: var(--gold); }
 .smt-mnemonic-row strong { color: var(--text); }
 .smt-next { padding: 10px 28px; border-radius: 24px; border: none; background: var(--lavender); color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: none; }
 .smt-next:hover { opacity: 0.88; transform: translateY(-1px); }
+.smt-mode-tabs { display: flex; gap: 6px; }
+.smt-mode-tab { padding: 7px 20px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; cursor: pointer; transition: all 0.15s; }
+.smt-mode-tab.active { border-color: var(--gold); color: var(--gold); background: rgba(232,200,122,0.1); }
+.smt-answers.chord-mode { grid-template-columns: repeat(2, 1fr); }
+.smt-ans-btn.chord-btn { font-size: 13px; font-weight: 600; padding: 14px 8px; letter-spacing: 0.01em; }
 @media (max-width: 480px) { .smt-answers { grid-template-columns: repeat(2, 1fr); } .smt-score { gap: 16px; } }
 
 /* ── ANIMATIONS ─────────────────────────────────────────────────────────── */
@@ -2899,45 +2904,64 @@ document.addEventListener('keydown', e => {
 
 // ── SHEET MUSIC TUTOR ─────────────────────────────────────────────────────
 (function() {
-  // ---- Note data ---------------------------------------------------------
-  // Each note: { name, clef, y, ledger (bool), octave, ledgerY (y of ledger line if needed) }
-  // Staff lines in SVG are at y = 90, 74, 58, 42, 26 (bottom to top of treble staff)
-  // SVG viewBox = "0 0 340 140"
+  // Staff lines y = [90, 74, 58, 42, 26] — bottom to top
+  // Each position is 8px apart (line→space = 8px, space→line = 8px)
 
-  // Treble clef lines (bottom→top): E4 G4 B4 D5 F5  — "Every Good Boy Does Fine"
-  // Treble clef spaces (bottom→top): F4 A4 C5 E5    — "FACE"
+  // ---- Single note data --------------------------------------------------
+  // Treble clef lines (E4 G4 B4 D5 F5) — "Every Good Boy Does Fine"
+  // Treble clef spaces (F4 A4 C5 E5)    — "FACE"
   const TREBLE_NOTES = [
-    { name:'C', label:'C4', y:106, ledger:true  },  // middle C — ledger line below staff
-    { name:'D', label:'D4', y:98,  ledger:false },  // space below staff
-    { name:'E', label:'E4', y:90,  ledger:false },  // line 1 (bottom)
-    { name:'F', label:'F4', y:82,  ledger:false },  // space 1
-    { name:'G', label:'G4', y:74,  ledger:false },  // line 2
-    { name:'A', label:'A4', y:66,  ledger:false },  // space 2
-    { name:'B', label:'B4', y:58,  ledger:false },  // line 3 (middle)
-    { name:'C', label:'C5', y:50,  ledger:false },  // space 3
-    { name:'D', label:'D5', y:42,  ledger:false },  // line 4
-    { name:'E', label:'E5', y:34,  ledger:false },  // space 4
-    { name:'F', label:'F5', y:26,  ledger:false },  // line 5 (top)
-    { name:'G', label:'G5', y:18,  ledger:false },  // space above staff
-    { name:'A', label:'A5', y:10,  ledger:true  },  // ledger line above staff
+    { name:'C', label:'C4', y:106, ledger:true  },
+    { name:'D', label:'D4', y:98,  ledger:false },
+    { name:'E', label:'E4', y:90,  ledger:false },
+    { name:'F', label:'F4', y:82,  ledger:false },
+    { name:'G', label:'G4', y:74,  ledger:false },
+    { name:'A', label:'A4', y:66,  ledger:false },
+    { name:'B', label:'B4', y:58,  ledger:false },
+    { name:'C', label:'C5', y:50,  ledger:false },
+    { name:'D', label:'D5', y:42,  ledger:false },
+    { name:'E', label:'E5', y:34,  ledger:false },
+    { name:'F', label:'F5', y:26,  ledger:false },
+    { name:'G', label:'G5', y:18,  ledger:false },
+    { name:'A', label:'A5', y:10,  ledger:true  },
+  ];
+  // Bass clef lines (G2 B2 D3 F3 A3) — "Good Boys Do Fine Always"
+  // Bass clef spaces (A2 C3 E3 G3)    — "All Cows Eat Grass"
+  const BASS_NOTES = [
+    { name:'E', label:'E2', y:106, ledger:true  },
+    { name:'F', label:'F2', y:98,  ledger:false },
+    { name:'G', label:'G2', y:90,  ledger:false },
+    { name:'A', label:'A2', y:82,  ledger:false },
+    { name:'B', label:'B2', y:74,  ledger:false },
+    { name:'C', label:'C3', y:66,  ledger:false },
+    { name:'D', label:'D3', y:58,  ledger:false },
+    { name:'E', label:'E3', y:50,  ledger:false },
+    { name:'F', label:'F3', y:42,  ledger:false },
+    { name:'G', label:'G3', y:34,  ledger:false },
+    { name:'A', label:'A3', y:26,  ledger:false },
+    { name:'B', label:'B3', y:18,  ledger:false },
+    { name:'C', label:'C4', y:10,  ledger:true  },
   ];
 
-  // Bass clef lines (bottom→top): G2 B2 D3 F3 A3  — "Good Boys Do Fine Always"
-  // Bass clef spaces (bottom→top): A2 C3 E3 G3     — "All Cows Eat Grass"
-  const BASS_NOTES = [
-    { name:'E', label:'E2', y:106, ledger:true  },  // ledger line below staff
-    { name:'F', label:'F2', y:98,  ledger:false },  // space below staff
-    { name:'G', label:'G2', y:90,  ledger:false },  // line 1 (bottom)
-    { name:'A', label:'A2', y:82,  ledger:false },  // space 1
-    { name:'B', label:'B2', y:74,  ledger:false },  // line 2
-    { name:'C', label:'C3', y:66,  ledger:false },  // space 2
-    { name:'D', label:'D3', y:58,  ledger:false },  // line 3 (middle)
-    { name:'E', label:'E3', y:50,  ledger:false },  // space 3
-    { name:'F', label:'F3', y:42,  ledger:false },  // line 4
-    { name:'G', label:'G3', y:34,  ledger:false },  // space 4
-    { name:'A', label:'A3', y:26,  ledger:false },  // line 5 (top)
-    { name:'B', label:'B3', y:18,  ledger:false },  // space above staff
-    { name:'C', label:'C4', y:10,  ledger:true  },  // middle C — ledger line above staff
+  // ---- Chord data (root-position triads) ---------------------------------
+  // notes array: [{y, ledger}] ordered lowest-to-highest (highest y = lowest pitch)
+  const TREBLE_CHORDS = [
+    { name:'E Minor',  short:'Em',  notes:[{y:90,ledger:false},{y:74,ledger:false},{y:58,ledger:false}] },
+    { name:'F Major',  short:'F',   notes:[{y:82,ledger:false},{y:66,ledger:false},{y:50,ledger:false}] },
+    { name:'G Major',  short:'G',   notes:[{y:74,ledger:false},{y:58,ledger:false},{y:42,ledger:false}] },
+    { name:'A Minor',  short:'Am',  notes:[{y:66,ledger:false},{y:50,ledger:false},{y:34,ledger:false}] },
+    { name:'B Dim',    short:'Bdim',notes:[{y:58,ledger:false},{y:42,ledger:false},{y:26,ledger:false}] },
+    { name:'C Major',  short:'C',   notes:[{y:50,ledger:false},{y:34,ledger:false},{y:18,ledger:false}] },
+    { name:'D Minor',  short:'Dm',  notes:[{y:42,ledger:false},{y:26,ledger:false},{y:10,ledger:true }] },
+  ];
+  const BASS_CHORDS = [
+    { name:'G Major',  short:'G',   notes:[{y:90,ledger:false},{y:74,ledger:false},{y:58,ledger:false}] },
+    { name:'A Minor',  short:'Am',  notes:[{y:82,ledger:false},{y:66,ledger:false},{y:50,ledger:false}] },
+    { name:'B Dim',    short:'Bdim',notes:[{y:74,ledger:false},{y:58,ledger:false},{y:42,ledger:false}] },
+    { name:'C Major',  short:'C',   notes:[{y:66,ledger:false},{y:50,ledger:false},{y:34,ledger:false}] },
+    { name:'D Minor',  short:'Dm',  notes:[{y:58,ledger:false},{y:42,ledger:false},{y:26,ledger:false}] },
+    { name:'E Minor',  short:'Em',  notes:[{y:50,ledger:false},{y:34,ledger:false},{y:18,ledger:false}] },
+    { name:'F Major',  short:'F',   notes:[{y:42,ledger:false},{y:26,ledger:false},{y:10,ledger:true }] },
   ];
 
   const TREBLE_MNEMONICS = [
@@ -2948,87 +2972,121 @@ document.addEventListener('keydown', e => {
     '<strong>Lines (bottom→top):</strong> Good Boys Do Fine Always (G B D F A)',
     '<strong>Spaces (bottom→top):</strong> All Cows Eat Grass (A C E G)',
   ];
+  const CHORD_MNEMONICS = [
+    '<strong>Major</strong> = happy/bright — root, major 3rd, perfect 5th',
+    '<strong>Minor</strong> = sad/dark — root, minor 3rd, perfect 5th',
+    '<strong>Diminished</strong> = tense — root, minor 3rd, diminished 5th',
+  ];
 
   // ---- State -------------------------------------------------------------
-  let clef = 'treble';      // 'treble' | 'bass'
-  let difficulty = 'lines'; // 'lines' | 'spaces' | 'all'
-  let currentNote = null;
+  let clef       = 'treble';
+  let difficulty = 'lines';
+  let mode       = 'notes';   // 'notes' | 'chords'
+  let currentNote  = null;
+  let currentChord = null;
   let answered = false;
-  let score = { correct: 0, total: 0, streak: 0 };
+  let score = { correct:0, total:0, streak:0 };
 
   // ---- Helpers -----------------------------------------------------------
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
   function getNotePool() {
     const notes = clef === 'treble' ? TREBLE_NOTES : BASS_NOTES;
-    // line y values (bottom of staff = 90, lines every 16px going up)
     const lineYs  = [90, 74, 58, 42, 26];
     const spaceYs = [82, 66, 50, 34];
     if (difficulty === 'lines')  return notes.filter(n => lineYs.includes(n.y));
     if (difficulty === 'spaces') return notes.filter(n => spaceYs.includes(n.y) || lineYs.includes(n.y));
-    return notes; // all — including ledger
+    return notes;
   }
 
   function pickNote() {
     const pool = getNotePool();
-    if (pool.length === 0) return pool[0];
-    // Avoid repeating the same note twice in a row
     let candidates = pool.filter(n => !currentNote || n.label !== currentNote.label);
-    if (candidates.length === 0) candidates = pool;
+    if (!candidates.length) candidates = pool;
     return candidates[Math.floor(Math.random() * candidates.length)];
   }
 
-  function getChoices(correctNote) {
-    const allNames = ['A','B','C','D','E','F','G'];
-    const others = allNames.filter(n => n !== correctNote.name);
-    // shuffle and pick 3 wrong answers
-    for (let i = others.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [others[i], others[j]] = [others[j], others[i]];
-    }
-    const choices = [correctNote.name, ...others.slice(0, 3)];
-    // shuffle choices
-    for (let i = choices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [choices[i], choices[j]] = [choices[j], choices[i]];
-    }
-    return choices;
+  function getNoteChoices(correct) {
+    const all = ['A','B','C','D','E','F','G'];
+    const others = shuffle(all.filter(n => n !== correct.name)).slice(0, 3);
+    return shuffle([correct.name, ...others]);
+  }
+
+  function getChordPool() {
+    return clef === 'treble' ? TREBLE_CHORDS : BASS_CHORDS;
+  }
+
+  function pickChord() {
+    const pool = getChordPool();
+    let candidates = pool.filter(c => !currentChord || c.name !== currentChord.name);
+    if (!candidates.length) candidates = pool;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
+
+  function getChordChoices(correct) {
+    const pool = getChordPool();
+    const others = shuffle(pool.filter(c => c.name !== correct.name)).slice(0, 3);
+    return shuffle([correct, ...others]);
   }
 
   // ---- SVG staff builder -------------------------------------------------
-  function buildStaffSVG(note) {
+  function buildStaffSVG(noteOrChord, isChord) {
     const W = 340, H = 145;
     const lineYs = [90, 74, 58, 42, 26];
-    const noteX = 170; // center
+    const noteX  = 170;
     const noteRx = 11, noteRy = 7.5;
-    const stemUp = note.y >= 58; // at or below middle line → stem goes up
-    const stemX = stemUp ? noteX + noteRx - 1 : noteX - noteRx + 1;
-    const stemY1 = stemUp ? note.y - 4 : note.y + 4;
-    const stemY2 = stemUp ? note.y - 40 : note.y + 40;
+    const color  = '#7c3aed';
 
-    let staffLines = lineYs.map(y =>
+    const staffLines = lineYs.map(y =>
       `<line x1="30" y1="${y}" x2="${W-30}" y2="${y}" stroke="#555" stroke-width="1.5"/>`
     ).join('');
 
-    // Ledger lines — drawn at the note's y position
-    let ledgerLines = '';
-    if (note.ledger) {
-      const ledgerX1 = noteX - 22, ledgerX2 = noteX + 22;
-      ledgerLines = `<line x1="${ledgerX1}" y1="${note.y}" x2="${ledgerX2}" y2="${note.y}" stroke="#555" stroke-width="1.5"/>`;
-    }
-
-    // Clef symbol (simple text approximation)
     const clefSvg = clef === 'treble'
       ? `<text x="36" y="88" font-size="82" fill="#444" font-family="serif" style="font-style:italic">𝄞</text>`
       : `<text x="36" y="76" font-size="52" fill="#444" font-family="serif">𝄢</text>`;
 
+    let ledgerSvg = '', notesSvg = '', stemSvg = '';
+
+    if (!isChord) {
+      // Single note
+      const n = noteOrChord;
+      const stemUp = n.y >= 58;
+      const stemX  = stemUp ? noteX + noteRx - 1 : noteX - noteRx + 1;
+      if (n.ledger) {
+        ledgerSvg = `<line x1="${noteX-22}" y1="${n.y}" x2="${noteX+22}" y2="${n.y}" stroke="#555" stroke-width="1.5"/>`;
+      }
+      notesSvg = `<ellipse cx="${noteX}" cy="${n.y}" rx="${noteRx}" ry="${noteRy}" fill="${color}" opacity="0.92" transform="rotate(-15,${noteX},${n.y})"/>`;
+      stemSvg  = `<line x1="${stemX}" y1="${stemUp ? n.y-4 : n.y+4}" x2="${stemX}" y2="${stemUp ? n.y-40 : n.y+40}" stroke="${color}" stroke-width="2"/>`;
+    } else {
+      // Chord — notes sorted by y (highest y = lowest pitch = bottom of chord)
+      const chord = noteOrChord;
+      const ys = chord.notes.map(n => n.y);
+      const bottomY = Math.max(...ys); // lowest pitch
+      const topY    = Math.min(...ys); // highest pitch
+      const stemUp  = bottomY >= 58;
+      const stemX   = stemUp ? noteX + noteRx - 1 : noteX - noteRx + 1;
+      const stemY1  = stemUp ? bottomY - 4 : topY + 4;
+      const stemY2  = stemUp ? topY - 38   : bottomY + 38;
+
+      stemSvg = `<line x1="${stemX}" y1="${stemY1}" x2="${stemX}" y2="${stemY2}" stroke="${color}" stroke-width="2"/>`;
+
+      chord.notes.forEach(n => {
+        if (n.ledger) {
+          ledgerSvg += `<line x1="${noteX-22}" y1="${n.y}" x2="${noteX+22}" y2="${n.y}" stroke="#555" stroke-width="1.5"/>`;
+        }
+        notesSvg += `<ellipse cx="${noteX}" cy="${n.y}" rx="${noteRx}" ry="${noteRy}" fill="${color}" opacity="0.92" transform="rotate(-15,${noteX},${n.y})"/>`;
+      });
+    }
+
     return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="smt-staff-svg" style="background:#fafafa;border-radius:10px">
   <rect width="${W}" height="${H}" fill="#fafafa" rx="10"/>
-  ${staffLines}
-  ${ledgerLines}
-  ${clefSvg}
-  <!-- note head -->
-  <ellipse cx="${noteX}" cy="${note.y}" rx="${noteRx}" ry="${noteRy}" fill="#7c3aed" opacity="0.92" transform="rotate(-15,${noteX},${note.y})"/>
-  <!-- stem -->
-  <line x1="${stemX}" y1="${stemY1}" x2="${stemX}" y2="${stemY2}" stroke="#7c3aed" stroke-width="2"/>
+  ${staffLines}${ledgerSvg}${clefSvg}${stemSvg}${notesSvg}
 </svg>`;
   }
 
@@ -3036,35 +3094,54 @@ document.addEventListener('keydown', e => {
   function render() {
     const mount = document.getElementById('smt-mount');
     if (!mount) return;
-
-    currentNote = pickNote();
     answered = false;
-    const choices = getChoices(currentNote);
-    const mnemonics = clef === 'treble' ? TREBLE_MNEMONICS : BASS_MNEMONICS;
+
+    const isChord = mode === 'chords';
+    let staffHtml, answersHtml, questionText, mnemonicRows;
+
+    if (!isChord) {
+      currentNote = pickNote();
+      const choices = getNoteChoices(currentNote);
+      staffHtml    = buildStaffSVG(currentNote, false);
+      questionText = 'What note is shown on the staff?';
+      answersHtml  = `<div class="smt-answers" id="smt-answers">
+        ${choices.map(ch => `<button class="smt-ans-btn" onclick="window._smtAnswer('${ch}','note')">${ch}</button>`).join('')}
+      </div>`;
+      mnemonicRows = (clef === 'treble' ? TREBLE_MNEMONICS : BASS_MNEMONICS)
+        .map(m => `<div class="smt-mnemonic-row">${m}</div>`).join('');
+    } else {
+      currentChord = pickChord();
+      const choices = getChordChoices(currentChord);
+      staffHtml    = buildStaffSVG(currentChord, true);
+      questionText = 'What chord is shown on the staff?';
+      answersHtml  = `<div class="smt-answers chord-mode" id="smt-answers">
+        ${choices.map(c => `<button class="smt-ans-btn chord-btn" onclick="window._smtAnswer('${c.name}','chord')">${c.name}</button>`).join('')}
+      </div>`;
+      mnemonicRows = CHORD_MNEMONICS.map(m => `<div class="smt-mnemonic-row">${m}</div>`).join('');
+    }
 
     mount.innerHTML = `<div class="smt-wrap">
       <div class="smt-top">
+        <div class="smt-mode-tabs">
+          <button class="smt-mode-tab ${mode==='notes'?'active':''}" onclick="window._smtSetMode('notes')">Single Notes</button>
+          <button class="smt-mode-tab ${mode==='chords'?'active':''}" onclick="window._smtSetMode('chords')">Chords</button>
+        </div>
         <div class="smt-clef-tabs">
           <button class="smt-tab ${clef==='treble'?'active':''}" onclick="window._smtSetClef('treble')">Treble Clef</button>
           <button class="smt-tab ${clef==='bass'?'active':''}" onclick="window._smtSetClef('bass')">Bass Clef</button>
         </div>
-        <div class="smt-diff">
+        ${!isChord ? `<div class="smt-diff">
           <button class="smt-diff-btn ${difficulty==='lines'?'active':''}" onclick="window._smtSetDiff('lines')">Lines Only</button>
           <button class="smt-diff-btn ${difficulty==='spaces'?'active':''}" onclick="window._smtSetDiff('spaces')">Lines+Spaces</button>
           <button class="smt-diff-btn ${difficulty==='all'?'active':''}" onclick="window._smtSetDiff('all')">All+Ledger</button>
-        </div>
+        </div>` : ''}
       </div>
 
-      <div class="smt-question">What note is shown on the staff?</div>
-
-      <div class="smt-staff-wrap">${buildStaffSVG(currentNote)}</div>
-
-      <div class="smt-answers" id="smt-answers">
-        ${choices.map(ch => `<button class="smt-ans-btn" onclick="window._smtAnswer('${ch}')">${ch}</button>`).join('')}
-      </div>
-
+      <div class="smt-question">${questionText}</div>
+      <div class="smt-staff-wrap">${staffHtml}</div>
+      ${answersHtml}
       <div class="smt-feedback" id="smt-feedback"></div>
-      <button class="smt-next" id="smt-next" onclick="window._smtNext()">Next Note →</button>
+      <button class="smt-next" id="smt-next" onclick="window._smtNext()">${isChord ? 'Next Chord →' : 'Next Note →'}</button>
 
       <div class="smt-score">
         <div class="smt-score-item"><div class="smt-score-val" id="smt-correct">${score.correct}</div><div class="smt-score-lbl">Correct</div></div>
@@ -3073,82 +3150,70 @@ document.addEventListener('keydown', e => {
       </div>
 
       <div class="smt-mnemonic">
-        <div class="smt-mnemonic-title">Memory Helpers</div>
-        ${mnemonics.map(m => `<div class="smt-mnemonic-row">${m}</div>`).join('')}
+        <div class="smt-mnemonic-title">${isChord ? 'Chord Guide' : 'Memory Helpers'}</div>
+        ${mnemonicRows}
       </div>
     </div>`;
   }
 
   // ---- Answer handler ----------------------------------------------------
-  window._smtAnswer = function(chosen) {
+  window._smtAnswer = function(chosen, type) {
     if (answered) return;
     answered = true;
     score.total++;
 
-    const btns = document.querySelectorAll('.smt-ans-btn');
-    const correct = chosen === currentNote.name;
-    if (correct) { score.correct++; score.streak++; }
-    else { score.streak = 0; }
+    const isChord = type === 'chord';
+    const correctAnswer = isChord ? currentChord.name : currentNote.name;
+    const correct = chosen === correctAnswer;
+    if (correct) { score.correct++; score.streak++; } else { score.streak = 0; }
 
-    btns.forEach(btn => {
+    document.querySelectorAll('.smt-ans-btn').forEach(btn => {
       btn.disabled = true;
-      if (btn.textContent === currentNote.name) btn.classList.add('correct');
-      else if (btn.textContent === chosen && !correct) btn.classList.add('wrong');
+      const label = btn.textContent.trim();
+      if (label === correctAnswer) btn.classList.add('correct');
+      else if (label === chosen && !correct) btn.classList.add('wrong');
     });
 
     const fb = document.getElementById('smt-feedback');
     if (correct) {
-      const praise = ['Perfect!','That\'s right!','Excellent!','Correct!','Nice!'];
-      fb.textContent = praise[Math.floor(Math.random() * praise.length)] + ' That\'s ' + currentNote.label + '.';
+      const praise = ['Perfect!','That\'s right!','Excellent!','Correct!','Nice work!'];
+      fb.textContent = praise[Math.floor(Math.random() * praise.length)] +
+        (isChord ? ' That\'s ' + currentChord.name + '.' : ' That\'s ' + currentNote.label + '.');
       fb.className = 'smt-feedback good';
     } else {
-      fb.textContent = 'Not quite — that note is ' + currentNote.label + ' (' + currentNote.name + ').';
+      fb.textContent = isChord
+        ? 'Not quite — that\'s ' + currentChord.name + '.'
+        : 'Not quite — that note is ' + currentNote.label + ' (' + currentNote.name + ').';
       fb.className = 'smt-feedback bad';
     }
 
     document.getElementById('smt-correct').textContent = score.correct;
     document.getElementById('smt-total').textContent   = score.total;
     document.getElementById('smt-streak').textContent  = score.streak;
-
-    const nextBtn = document.getElementById('smt-next');
-    if (nextBtn) nextBtn.style.display = 'inline-block';
+    const nb = document.getElementById('smt-next');
+    if (nb) nb.style.display = 'inline-block';
   };
 
-  window._smtNext = function() {
-    render();
-  };
-
-  window._smtSetClef = function(c) {
-    clef = c;
-    currentNote = null;
-    render();
-  };
-
-  window._smtSetDiff = function(d) {
-    difficulty = d;
-    currentNote = null;
-    render();
-  };
+  window._smtNext    = function() { render(); };
+  window._smtSetMode = function(m) { mode = m; currentNote = null; currentChord = null; render(); };
+  window._smtSetClef = function(c) { clef = c; currentNote = null; currentChord = null; render(); };
+  window._smtSetDiff = function(d) { difficulty = d; currentNote = null; render(); };
 
   // ---- Open / close ------------------------------------------------------
   window.openSheetMusicTutor = function(e) {
     if (e) e.preventDefault();
-    const modal = document.getElementById('smtModal');
-    modal.classList.add('open');
+    document.getElementById('smtModal').classList.add('open');
     document.body.style.overflow = 'hidden';
     const sidebar = document.getElementById('sidebar');
     if (sidebar && sidebar.classList.contains('open')) toggleSidebar();
-    // Reset score on fresh open
-    score = { correct: 0, total: 0, streak: 0 };
-    currentNote = null;
+    score = { correct:0, total:0, streak:0 };
+    currentNote = null; currentChord = null;
     render();
   };
-
   window.closeSheetMusicTutor = function() {
     document.getElementById('smtModal').classList.remove('open');
     document.body.style.overflow = '';
   };
-
   window.handleSmtModalClick = function(e) {
     if (e.target === document.getElementById('smtModal')) window.closeSheetMusicTutor();
   };
