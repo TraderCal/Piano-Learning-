@@ -1120,6 +1120,33 @@ footer a:hover { color: var(--gold); }
 .smt-ans-btn.chord-btn { font-size: 13px; font-weight: 600; padding: 14px 8px; letter-spacing: 0.01em; }
 @media (max-width: 480px) { .smt-answers { grid-template-columns: repeat(2, 1fr); } .smt-score { gap: 16px; } }
 
+/* ── CHORDS FOR BEGINNERS (cfb-) ─────────────────────────────────────────── */
+.cfb-wrap { display: flex; flex-direction: column; gap: 24px; padding: 28px 24px 36px; font-family: 'Outfit', sans-serif; }
+.cfb-header { text-align: center; }
+.cfb-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); margin-bottom: 4px; }
+.cfb-subtitle { font-size: 13px; color: var(--text-dim); }
+.cfb-key-row { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
+.cfb-key-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.cfb-key-btn:hover { border-color: var(--gold); color: var(--gold); }
+.cfb-key-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(232,200,122,0.1); font-weight: 700; }
+.cfb-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-mute); text-align: center; }
+.cfb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.cfb-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; transition: transform 0.15s, box-shadow 0.15s; }
+.cfb-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.cfb-card-top { display: flex; align-items: center; justify-content: space-between; }
+.cfb-roman { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-mute); letter-spacing: 0.1em; }
+.cfb-badge { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.06em; }
+.cfb-badge-major { background: rgba(232,200,122,0.15); color: var(--gold); border: 1px solid rgba(232,200,122,0.3); }
+.cfb-badge-minor { background: rgba(78,205,196,0.1); color: var(--teal); border: 1px solid rgba(78,205,196,0.25); }
+.cfb-badge-dim   { background: rgba(252,129,129,0.1); color: var(--rose); border: 1px solid rgba(252,129,129,0.25); }
+.cfb-chord-name { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.1; }
+.cfb-chord-sub { font-size: 12px; color: var(--text-dim); font-weight: 400; margin-top: 1px; }
+.cfb-notes { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em; padding-top: 6px; border-top: 1px solid var(--border); }
+.cfb-card-major { border-color: rgba(232,200,122,0.2); }
+.cfb-card-minor { border-color: rgba(78,205,196,0.15); }
+.cfb-card-dim   { border-color: rgba(252,129,129,0.15); }
+@media (max-width: 480px) { .cfb-grid { grid-template-columns: repeat(2, 1fr); } }
+
 /* ── ANIMATIONS ─────────────────────────────────────────────────────────── */
 
 /* Hero entrance — staggered fade + slide up */
@@ -1510,6 +1537,20 @@ footer a:hover { color: var(--gold); }
   </div>
 </div>
 
+<!-- CHORDS FOR BEGINNERS MODAL -->
+<div class="tool-modal" id="cfbModal" onclick="handleCfbModalClick(event)">
+  <div class="tool-modal-inner" style="max-width:740px">
+    <div class="tool-modal-bar">
+      <div class="tool-modal-title">
+        <div class="tool-modal-dot" style="background:var(--gold)"></div>
+        Chords for Beginners — Piano408 Studios
+      </div>
+      <button class="tool-modal-close" onclick="closeChordsForBeginners()">Close &nbsp;<kbd>Esc</kbd></button>
+    </div>
+    <div id="cfb-mount" class="tool-modal-frame" style="overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- SHEET MUSIC TUTOR MODAL -->
 <div class="tool-modal" id="smtModal" onclick="handleSmtModalClick(event)">
   <div class="tool-modal-inner" style="max-width:600px">
@@ -1779,6 +1820,7 @@ footer a:hover { color: var(--gold); }
         <a href="#" class="nav-item" onclick="openCircleOf5ths(event)"><span class="nav-icon">🎼</span> Circle of 5ths</a>
         <a href="#" class="nav-item" onclick="openIntervalTrainer(event)"><span class="nav-icon">🎶</span> Interval Trainer</a>
         <a href="#" class="nav-item" onclick="openSheetMusicTutor(event)"><span class="nav-icon">🎵</span> Sheet Music Tutor</a>
+        <a href="#" class="nav-item" onclick="openChordsForBeginners(event)"><span class="nav-icon">🎹</span> Chords for Beginners</a>
       </div>
 
       <div class="nav-section">
@@ -2699,7 +2741,7 @@ function handleModalClick(e) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeChordAcademy(); closeEarTraining(); closeScaleExplorer(); closeCircleOf5ths(); closeSheetMusic();
-    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking(); closeShop(); closeIntervalTrainer(); if(window.closeSheetMusicTutor) closeSheetMusicTutor();
+    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking(); closeShop(); closeIntervalTrainer(); if(window.closeSheetMusicTutor) closeSheetMusicTutor(); if(window.closeChordsForBeginners) closeChordsForBeginners();
   }
 });
 
@@ -3216,6 +3258,111 @@ document.addEventListener('keydown', e => {
   };
   window.handleSmtModalClick = function(e) {
     if (e.target === document.getElementById('smtModal')) window.closeSheetMusicTutor();
+  };
+})();
+
+// ── CHORDS FOR BEGINNERS ───────────────────────────────────────────────────
+(function() {
+  // Major scale notes for all 12 keys
+  const SCALES = {
+    'C' : ['C','D','E','F','G','A','B'],
+    'Db': ['Db','Eb','F','Gb','Ab','Bb','C'],
+    'D' : ['D','E','F#','G','A','B','C#'],
+    'Eb': ['Eb','F','G','Ab','Bb','C','D'],
+    'E' : ['E','F#','G#','A','B','C#','D#'],
+    'F' : ['F','G','A','Bb','C','D','E'],
+    'F#': ['F#','G#','A#','B','C#','D#','E#'],
+    'G' : ['G','A','B','C','D','E','F#'],
+    'Ab': ['Ab','Bb','C','Db','Eb','F','G'],
+    'A' : ['A','B','C#','D','E','F#','G#'],
+    'Bb': ['Bb','C','D','Eb','F','G','A'],
+    'B' : ['B','C#','D#','E','F#','G#','A#'],
+  };
+
+  // Diatonic triad pattern for a major key
+  const DEGREES = [
+    { roman:'I',    quality:'Major', badge:'major', desc:'happy, stable' },
+    { roman:'ii',   quality:'Minor', badge:'minor', desc:'gentle, sad' },
+    { roman:'iii',  quality:'Minor', badge:'minor', desc:'reflective' },
+    { roman:'IV',   quality:'Major', badge:'major', desc:'warm, lifting' },
+    { roman:'V',    quality:'Major', badge:'major', desc:'tension, leading' },
+    { roman:'vi',   quality:'Minor', badge:'minor', desc:'melancholic' },
+    { roman:'vii°', quality:'Dim',   badge:'dim',   desc:'dissonant' },
+  ];
+
+  const KEY_ORDER = ['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+  let activeKey = 'C';
+
+  function buildChords(key) {
+    const scale = SCALES[key];
+    return DEGREES.map((deg, i) => ({
+      roman:   deg.roman,
+      quality: deg.quality,
+      badge:   deg.badge,
+      desc:    deg.desc,
+      root:    scale[i],
+      third:   scale[(i + 2) % 7],
+      fifth:   scale[(i + 4) % 7],
+      name:    scale[i] + (deg.quality === 'Major' ? '' : deg.quality === 'Minor' ? 'm' : '°'),
+      fullName:scale[i] + ' ' + deg.quality,
+    }));
+  }
+
+  function render() {
+    const mount = document.getElementById('cfb-mount');
+    if (!mount) return;
+    const chords = buildChords(activeKey);
+
+    const keyBtns = KEY_ORDER.map(k =>
+      `<button class="cfb-key-btn${k===activeKey?' active':''}" onclick="window._cfbSetKey('${k}')">${k}</button>`
+    ).join('');
+
+    const cards = chords.map(ch => `
+      <div class="cfb-card cfb-card-${ch.badge}">
+        <div class="cfb-card-top">
+          <span class="cfb-roman">${ch.roman}</span>
+          <span class="cfb-badge cfb-badge-${ch.badge}">${ch.quality}</span>
+        </div>
+        <div>
+          <div class="cfb-chord-name">${ch.name}</div>
+          <div class="cfb-chord-sub">${ch.fullName}</div>
+        </div>
+        <div class="cfb-notes">${ch.root} &ndash; ${ch.third} &ndash; ${ch.fifth}</div>
+      </div>`
+    ).join('');
+
+    mount.innerHTML = `<div class="cfb-wrap">
+      <div class="cfb-header">
+        <div class="cfb-title">Chords for Beginners</div>
+        <div class="cfb-subtitle">Diatonic triads — the 7 chords naturally found in every major key</div>
+      </div>
+      <div>
+        <div class="cfb-label" style="margin-bottom:10px">Select a Key</div>
+        <div class="cfb-key-row">${keyBtns}</div>
+      </div>
+      <div>
+        <div class="cfb-label" style="margin-bottom:12px">Key of ${activeKey} Major — All 7 Chords</div>
+        <div class="cfb-grid">${cards}</div>
+      </div>
+    </div>`;
+  }
+
+  window._cfbSetKey = function(k) { activeKey = k; render(); };
+
+  window.openChordsForBeginners = function(e) {
+    if (e) e.preventDefault();
+    document.getElementById('cfbModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) toggleSidebar();
+    render();
+  };
+  window.closeChordsForBeginners = function() {
+    document.getElementById('cfbModal').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  window.handleCfbModalClick = function(e) {
+    if (e.target === document.getElementById('cfbModal')) closeChordsForBeginners();
   };
 })();
 
