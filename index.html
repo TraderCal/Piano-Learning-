@@ -210,23 +210,42 @@ body::after {
   padding: 80px 64px;
   overflow: hidden;
   border-top: none !important;
+  background-image: url('https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=1600&q=80&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center 40%;
+}
+/* Dark gradient overlay so text stays legible */
+.hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    105deg,
+    rgba(10,11,16,0.96) 0%,
+    rgba(10,11,16,0.82) 45%,
+    rgba(10,11,16,0.45) 75%,
+    rgba(10,11,16,0.25) 100%
+  );
+  z-index: 1;
 }
 .hero-keys {
   position: absolute; bottom: 0; right: -40px;
   width: 55%; height: 100%;
-  opacity: 0.04; pointer-events: none;
+  opacity: 0.03; pointer-events: none;
   display: flex; align-items: flex-end;
+  z-index: 0;
 }
 .hk { height: 70%; flex: 1; background: var(--text); border-radius: 0 0 4px 4px; margin: 0 2px; }
 .hk:nth-child(even) { height: 45%; background: var(--text-mute); }
+/* Gold glow in upper-left */
 .hero::before {
   content: '';
-  position: absolute; top: -100px; left: -100px;
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(232,200,122,0.07) 0%, transparent 65%);
+  position: absolute; top: -80px; left: -80px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(232,200,122,0.12) 0%, transparent 65%);
   pointer-events: none;
+  z-index: 2;
 }
-.hero-content { position: relative; z-index: 2; max-width: 600px; }
+.hero-content { position: relative; z-index: 3; max-width: 560px; }
 .hero-eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
   font-family: 'DM Mono', monospace; font-size: 11px;
@@ -253,8 +272,8 @@ body::after {
 }
 .btn-secondary:hover { border-color: var(--gold-dim); color: var(--gold); transform: translateY(-1px); }
 .hero-stats { display: flex; gap: 32px; margin-top: 52px; padding-top: 32px; border-top: 1px solid var(--border); }
-.stat-num { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--gold); line-height: 1; }
-.stat-label { font-size: 12px; color: var(--text-mute); font-weight: 300; margin-top: 4px; }
+.stat-num { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--gold); line-height: 1; text-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+.stat-label { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 300; margin-top: 4px; }
 
 /* ── SECTIONS ───────────────────────────────────────────────────────────── */
 section { padding: 80px 64px; position: relative; }
@@ -334,6 +353,35 @@ section + section { border-top: 1px solid var(--border); }
 .piano-caption { text-align: center; padding: 14px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-mute); letter-spacing: 0.15em; text-transform: uppercase; }
 .piano-visual { position: relative; }
 .piano-glow { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); width: 200px; height: 60px; background: var(--gold); border-radius: 50%; filter: blur(40px); opacity: 0.12; pointer-events: none; }
+/* Real photo panel */
+.piano-photo-wrap {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 28px 72px rgba(0,0,0,0.75), 0 2px 0 rgba(255,255,255,0.05) inset;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.piano-photo {
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  object-position: center 60%;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.piano-photo-wrap:hover .piano-photo { transform: scale(1.03); }
+.piano-photo-grad {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, rgba(10,11,16,0.55) 100%);
+  pointer-events: none;
+}
+.piano-photo-tag {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: rgba(255,255,255,0.5);
+  background: rgba(10,11,16,0.5); padding: 5px 14px; border-radius: 20px;
+  backdrop-filter: blur(8px); white-space: nowrap;
+}
 .piano-reasons { display: flex; flex-direction: column; gap: 20px; }
 .reason-item { display: flex; gap: 16px; align-items: flex-start; }
 .reason-num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); background: var(--gold-glow); border: 1px solid rgba(232,200,122,0.2); border-radius: 6px; padding: 4px 8px; flex-shrink: 0; margin-top: 2px; }
@@ -1978,19 +2026,15 @@ footer a:hover { color: var(--gold); }
           </div>
         </div>
         <div class="piano-visual">
-          <div class="piano-mockup">
-            <div class="mock-fallboard"></div>
-            <div class="mock-keys">
-              <div class="mk-w gold"></div><div class="mk-b"></div>
-              <div class="mk-w gold"></div><div class="mk-b gold"></div>
-              <div class="mk-w"></div><div class="mk-b"></div>
-              <div class="mk-w gold"></div><div class="mk-b"></div>
-              <div class="mk-w"></div><div class="mk-b gold"></div>
-              <div class="mk-w gold"></div><div class="mk-b"></div>
-              <div class="mk-w"></div><div class="mk-b gold"></div>
-              <div class="mk-w"></div>
-            </div>
-            <div class="piano-caption">Cmaj9 — C E G B D</div>
+          <div class="piano-photo-wrap">
+            <img
+              src="https://images.unsplash.com/photo-1571327073757-71d13c8d7d5e?w=800&q=85&auto=format&fit=crop"
+              alt="Grand piano keys"
+              class="piano-photo"
+              loading="lazy"
+            >
+            <div class="piano-photo-grad"></div>
+            <div class="piano-photo-tag">Grand Piano · Studio Session</div>
           </div>
           <div class="piano-glow"></div>
         </div>
