@@ -3571,27 +3571,18 @@ document.addEventListener('keydown', e => {
     const mount = document.getElementById('fl-mount');
     if (!mount) return;
 
-    let html = `<div class="fl-wrap">
-      <div class="fl-hero">
-        <div class="fl-hero-eyebrow">100% Free · No Sign-up Required</div>
-        <div class="fl-hero-title">Learn Piano the <em>Right Way</em></div>
-        <p class="fl-hero-sub">12 structured lessons from zero to advanced — covering technique, theory, chords, and real music. Work at your own pace.</p>
-      </div>`;
-
-    Object.entries(LESSONS).forEach(([key, level]) => {
-      html += `<div class="fl-level-label fl-level-${key}" style="color:${level.color}">${level.label}</div>
-      <div class="fl-grid">
-        ${level.items.map(item => buildCard(item, level.color, level.badge)).join('')}
-      </div>`;
-    });
-
-    html += `<div class="fl-cta">
-      <div class="fl-cta-title">Ready to go deeper?</div>
-      <p class="fl-cta-sub">Get personalized feedback, a custom plan, and 1-on-1 time with a real teacher.</p>
-      <a href="#" class="btn-primary" onclick="closeFreeLessons(); openBooking(event)">Book a Private Lesson →</a>
-    </div></div>`;
-
-    mount.innerHTML = html;
+    mount.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px;padding:48px 32px;text-align:center;font-family:'Outfit',sans-serif;">
+      <div style="font-size:52px;margin-bottom:20px;">🎹</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal);margin-bottom:14px;">Coming Soon</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--text);margin-bottom:12px;">Free Lessons are on the way</div>
+      <p style="font-size:14px;font-weight:300;color:var(--text-dim);line-height:1.75;max-width:400px;margin-bottom:32px;">
+        Video lessons covering beginner fundamentals, chord theory, scales, and gospel/jazz technique are coming very soon. Check back shortly!
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+        <a href="#" class="btn-primary" onclick="closeFreeLessons(); openBooking(event)">Book a Private Lesson →</a>
+        <a href="#" class="btn-secondary" onclick="closeFreeLessons(); openPricing(event)">View Pricing</a>
+      </div>
+    </div>`;
   }
 
   window.openFreeLessons = function(e) {
