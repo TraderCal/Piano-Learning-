@@ -1124,6 +1124,53 @@ footer a:hover { color: var(--gold); }
 .sh-header { padding: 20px 24px 0; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
 .sh-header p { font-size: 13px; color: var(--text-dim); font-weight: 300; margin-top: 4px; }
 
+/* ── FREE LESSONS (fl-) ─────────────────────────────────────────────────── */
+.fl-wrap { padding: 28px 24px 40px; font-family: 'Outfit', sans-serif; }
+.fl-hero { text-align: center; padding: 8px 0 28px; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+.fl-hero-eyebrow { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); margin-bottom: 10px; }
+.fl-hero-title { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text); margin-bottom: 8px; }
+.fl-hero-title em { font-style: italic; color: var(--gold); }
+.fl-hero-sub { font-size: 13px; color: var(--text-dim); font-weight: 300; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+.fl-level-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.fl-level-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.fl-level-beginner { color: var(--teal); }
+.fl-level-intermediate { color: var(--gold); }
+.fl-level-advanced { color: var(--lavender); }
+.fl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 32px; }
+.fl-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.fl-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.35); }
+.fl-card-thumb {
+  height: 6px;
+  background: var(--fl-accent, var(--teal));
+}
+.fl-card-body { padding: 18px 18px 14px; flex: 1; }
+.fl-card-num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--fl-accent, var(--teal)); letter-spacing: 0.1em; margin-bottom: 6px; }
+.fl-card-title { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--text); margin-bottom: 6px; line-height: 1.25; }
+.fl-card-desc { font-size: 12px; color: var(--text-dim); font-weight: 300; line-height: 1.65; }
+.fl-card-footer { padding: 0 18px 16px; display: flex; align-items: center; justify-content: space-between; }
+.fl-duration { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-mute); letter-spacing: 0.06em; }
+.fl-badge { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+.fl-badge-beginner    { background: rgba(78,205,196,0.12); color: var(--teal);    border: 1px solid rgba(78,205,196,0.25); }
+.fl-badge-intermediate{ background: rgba(232,200,122,0.12); color: var(--gold);    border: 1px solid rgba(232,200,122,0.25); }
+.fl-badge-advanced    { background: rgba(167,139,250,0.12); color: var(--lavender);border: 1px solid rgba(167,139,250,0.25); }
+.fl-start-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--fl-accent, var(--teal));
+  color: var(--fl-accent, var(--teal)); background: transparent;
+  font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600;
+  text-decoration: none; transition: all 0.15s; cursor: pointer;
+}
+.fl-start-btn:hover { background: var(--fl-accent, var(--teal)); color: #0d0f14; }
+.fl-cta { background: linear-gradient(135deg, rgba(232,200,122,0.07), rgba(78,205,196,0.07)); border: 1px solid rgba(232,200,122,0.18); border-radius: 14px; padding: 24px 28px; text-align: center; margin-top: 8px; }
+.fl-cta-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text); margin-bottom: 6px; }
+.fl-cta-sub { font-size: 13px; color: var(--text-dim); font-weight: 300; margin-bottom: 16px; }
+@media (max-width: 480px) { .fl-grid { grid-template-columns: 1fr; } }
+
 /* ── INTERVAL TRAINER (it-) ──────────────────────────────────────────────── */
 .it-app { max-width: 680px; margin: 0 auto; padding: 28px 24px 48px; font-family: 'Outfit', sans-serif; }
 .it-header { text-align: center; margin-bottom: 28px; }
@@ -1620,6 +1667,20 @@ footer a:hover { color: var(--gold); }
   </div>
 </div>
 
+<!-- FREE LESSONS MODAL -->
+<div class="tool-modal" id="freeLessonsModal" onclick="handleFreeLessonsModalClick(event)">
+  <div class="tool-modal-inner" style="max-width:780px">
+    <div class="tool-modal-bar">
+      <div class="tool-modal-title">
+        <div class="tool-modal-dot" style="background:var(--teal)"></div>
+        Free Lessons — Piano408 Studios
+      </div>
+      <button class="tool-modal-close" onclick="closeFreeLessons()">Close &nbsp;<kbd>Esc</kbd></button>
+    </div>
+    <div id="fl-mount" class="tool-modal-frame" style="overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- CHORDS FOR BEGINNERS MODAL -->
 <div class="tool-modal" id="cfbModal" onclick="handleCfbModalClick(event)">
   <div class="tool-modal-inner" style="max-width:740px">
@@ -1904,6 +1965,14 @@ footer a:hover { color: var(--gold); }
         <a href="#" class="nav-item" onclick="openIntervalTrainer(event)"><span class="nav-icon">🎶</span> Interval Trainer</a>
         <a href="#" class="nav-item" onclick="openSheetMusicTutor(event)"><span class="nav-icon">🎵</span> Sheet Music Tutor</a>
         <a href="#" class="nav-item" onclick="openChordsForBeginners(event)"><span class="nav-icon">🎹</span> Chords for Beginners</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Free Lessons</div>
+        <a href="#" class="nav-item" onclick="openFreeLessons(event)">
+          <span class="nav-icon">🎓</span> Free Lessons
+          <span class="nav-badge" style="background:var(--teal);color:#0d0f14">FREE</span>
+        </a>
       </div>
 
       <div class="nav-section">
@@ -2826,7 +2895,7 @@ function handleModalClick(e) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeChordAcademy(); closeEarTraining(); closeScaleExplorer(); closeCircleOf5ths(); closeSheetMusic();
-    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking(); closeShop(); closeIntervalTrainer(); if(window.closeSheetMusicTutor) closeSheetMusicTutor(); if(window.closeChordsForBeginners) closeChordsForBeginners();
+    closeAbout(); closePracticeGuide(); closeVideoLibrary(); closeReviews(); closePricing(); closeBooking(); closeShop(); closeIntervalTrainer(); if(window.closeSheetMusicTutor) closeSheetMusicTutor(); if(window.closeChordsForBeginners) closeChordsForBeginners(); if(window.closeFreeLessons) closeFreeLessons();
   }
 });
 
@@ -3448,6 +3517,97 @@ document.addEventListener('keydown', e => {
   };
   window.handleCfbModalClick = function(e) {
     if (e.target === document.getElementById('cfbModal')) closeChordsForBeginners();
+  };
+})();
+
+// ── FREE LESSONS ───────────────────────────────────────────────────────────
+(function() {
+  const LESSONS = {
+    beginner: {
+      label: 'Beginner', color: 'var(--teal)', badge: 'beginner',
+      items: [
+        { num:'01', title:'Piano Basics: Keys, Posture & Fingers',       desc:'Learn the layout of the 88 keys, how to sit correctly, and the numbering system for your fingers before touching a note.',       duration:'12 min' },
+        { num:'02', title:'Your First Chord: C Major',                    desc:'Play your first chord in under 5 minutes. We\'ll break down C–E–G and why this triad is the perfect starting point.',          duration:'10 min' },
+        { num:'03', title:'Reading Notes: Treble Clef Fundamentals',      desc:'Decode the treble clef staff line by line. By the end you\'ll recognize every note from C4 to F5 without hesitation.',          duration:'15 min' },
+        { num:'04', title:'Simple Melodies: Your First Song',             desc:'Put notes into action with a simple melody using only the white keys. No theory overwhelm — just music from minute one.',       duration:'14 min' },
+      ]
+    },
+    intermediate: {
+      label: 'Intermediate', color: 'var(--gold)', badge: 'intermediate',
+      items: [
+        { num:'05', title:'Major Scale Shapes Across All 12 Keys',        desc:'Learn the pattern that unlocks every major scale. One formula, all 12 keys — including the sharp and flat ones.',             duration:'18 min' },
+        { num:'06', title:'Left Hand Patterns: Ballad & Gospel Bass',     desc:'Add soul to your playing with two essential left hand grooves used in gospel, R&B, and contemporary worship.',                  duration:'16 min' },
+        { num:'07', title:'The I–IV–V–I Progression',                     desc:'Master the most important chord progression in Western music. Once you hear it, you\'ll recognize it everywhere.',             duration:'20 min' },
+        { num:'08', title:'Playing With Both Hands Together',             desc:'Strategies to sync your hands without frustration. Slow practice, chunking, and the "anchor" technique explained.',            duration:'22 min' },
+      ]
+    },
+    advanced: {
+      label: 'Advanced', color: 'var(--lavender)', badge: 'advanced',
+      items: [
+        { num:'09', title:'Extended Chords: 9ths, 11ths & 13ths',         desc:'Go beyond triads and 7ths. Learn how to voice extended chords cleanly and when to use them for maximum color.',               duration:'25 min' },
+        { num:'10', title:'Chord Substitutions & Reharmonization',        desc:'Replace predictable chords with richer alternatives. The secret behind that "jazz pianist" sound.',                           duration:'28 min' },
+        { num:'11', title:'Improvisation Over a ii–V–I',                  desc:'Build a vocabulary for improvising over the most common jazz progression. Scales, approach notes, and licks included.',         duration:'30 min' },
+        { num:'12', title:'Gospel Left Hand: The Full Stride Pattern',    desc:'Elevate your left hand from bass notes to full stride. Essential for gospel, neo-soul, and worship keyboard players.',          duration:'26 min' },
+      ]
+    },
+  };
+
+  function buildCard(item, color, badge) {
+    return `<div class="fl-card" style="--fl-accent:${color}">
+      <div class="fl-card-thumb"></div>
+      <div class="fl-card-body">
+        <div class="fl-card-num">Lesson ${item.num}</div>
+        <div class="fl-card-title">${item.title}</div>
+        <div class="fl-card-desc">${item.desc}</div>
+      </div>
+      <div class="fl-card-footer">
+        <span class="fl-duration">⏱ ${item.duration}</span>
+        <span class="fl-badge fl-badge-${badge}">${badge}</span>
+      </div>
+    </div>`;
+  }
+
+  function render() {
+    const mount = document.getElementById('fl-mount');
+    if (!mount) return;
+
+    let html = `<div class="fl-wrap">
+      <div class="fl-hero">
+        <div class="fl-hero-eyebrow">100% Free · No Sign-up Required</div>
+        <div class="fl-hero-title">Learn Piano the <em>Right Way</em></div>
+        <p class="fl-hero-sub">12 structured lessons from zero to advanced — covering technique, theory, chords, and real music. Work at your own pace.</p>
+      </div>`;
+
+    Object.entries(LESSONS).forEach(([key, level]) => {
+      html += `<div class="fl-level-label fl-level-${key}" style="color:${level.color}">${level.label}</div>
+      <div class="fl-grid">
+        ${level.items.map(item => buildCard(item, level.color, level.badge)).join('')}
+      </div>`;
+    });
+
+    html += `<div class="fl-cta">
+      <div class="fl-cta-title">Ready to go deeper?</div>
+      <p class="fl-cta-sub">Get personalized feedback, a custom plan, and 1-on-1 time with a real teacher.</p>
+      <a href="#" class="btn-primary" onclick="closeFreeLessons(); openBooking(event)">Book a Private Lesson →</a>
+    </div></div>`;
+
+    mount.innerHTML = html;
+  }
+
+  window.openFreeLessons = function(e) {
+    if (e) e.preventDefault();
+    document.getElementById('freeLessonsModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) toggleSidebar();
+    render();
+  };
+  window.closeFreeLessons = function() {
+    document.getElementById('freeLessonsModal').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  window.handleFreeLessonsModalClick = function(e) {
+    if (e.target === document.getElementById('freeLessonsModal')) closeFreeLessons();
   };
 })();
 
