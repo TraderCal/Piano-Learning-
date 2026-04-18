@@ -3571,18 +3571,52 @@ document.addEventListener('keydown', e => {
     const mount = document.getElementById('fl-mount');
     if (!mount) return;
 
-    mount.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px;padding:48px 32px;text-align:center;font-family:'Outfit',sans-serif;">
-      <div style="font-size:52px;margin-bottom:20px;">🎹</div>
-      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal);margin-bottom:14px;">Coming Soon</div>
-      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--text);margin-bottom:12px;">Free Lessons are on the way</div>
-      <p style="font-size:14px;font-weight:300;color:var(--text-dim);line-height:1.75;max-width:400px;margin-bottom:32px;">
-        Video lessons covering beginner fundamentals, chord theory, scales, and gospel/jazz technique are coming very soon. Check back shortly!
-      </p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-        <a href="#" class="btn-primary" onclick="closeFreeLessons(); openBooking(event)">Book a Private Lesson →</a>
-        <a href="#" class="btn-secondary" onclick="closeFreeLessons(); openPricing(event)">View Pricing</a>
-      </div>
-    </div>`;
+    mount.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:0;font-family:'Outfit',sans-serif;max-width:800px;margin:0 auto;padding:32px 24px 40px;">
+
+        <!-- Section header -->
+        <div style="margin-bottom:24px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">Free Lessons</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--text);margin-bottom:4px;">Lesson 1 — Getting Started</div>
+          <div style="font-size:13px;font-weight:300;color:var(--text-dim);">Beginner fundamentals — posture, hand position, and your first chords</div>
+        </div>
+
+        <!-- Video player -->
+        <div style="position:relative;width:100%;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 8px 40px rgba(0,0,0,0.6);margin-bottom:28px;">
+          <video
+            controls
+            preload="metadata"
+            playsinline
+            style="width:100%;display:block;max-height:480px;object-fit:contain;"
+          >
+            <source src="lesson-01.mp4" type="video/mp4">
+            Your browser does not support HTML5 video.
+          </video>
+        </div>
+
+        <!-- Divider + CTA -->
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;">
+          <div style="flex:1;height:1px;background:var(--border);opacity:0.4;"></div>
+          <div style="font-size:12px;font-weight:300;color:var(--text-dim);white-space:nowrap;">More lessons coming soon</div>
+          <div style="flex:1;height:1px;background:var(--border);opacity:0.4;"></div>
+        </div>
+
+        <!-- Placeholder cards for upcoming lessons -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:32px;">
+          ${['Lesson 2 — Scales & Patterns','Lesson 3 — Chord Theory','Lesson 4 — Gospel Voicings','Lesson 5 — Jazz Technique'].map(title => `
+            <div style="border:1px solid var(--border);border-radius:10px;padding:16px 14px;opacity:0.45;cursor:default;">
+              <div style="font-size:20px;margin-bottom:8px;">🔒</div>
+              <div style="font-size:12px;font-weight:500;color:var(--text-dim);line-height:1.4;">${title}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Bottom CTA -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+          <a href="#" class="btn-primary" onclick="closeFreeLessons(); openBooking(event)">Book a Private Lesson →</a>
+          <a href="#" class="btn-secondary" onclick="closeFreeLessons(); openPricing(event)">View Pricing</a>
+        </div>
+      </div>`;
   }
 
   window.openFreeLessons = function(e) {
