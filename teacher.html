@@ -10,6 +10,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <!-- Storage SDK removed — using YouTube + Google Drive links instead -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     :root {
       --bg:       #0a0b10;
@@ -423,6 +424,19 @@ const auth    = firebase.auth();
 const db      = firebase.firestore();
 // No storage needed — using external URLs
 
+// ──────────────────────────────────────────────────────────────────
+//  EMAILJS SETUP
+//  1. Go to https://emailjs.com → free account
+//  2. Add a Gmail service → copy the Service ID below
+//  3. Create a template (see instructions) → copy the Template ID below
+//  4. Account → API Keys → copy your Public Key below
+// ──────────────────────────────────────────────────────────────────
+const EMAILJS_SERVICE_ID  = "REPLACE_WITH_SERVICE_ID";
+const EMAILJS_TEMPLATE_ID = "REPLACE_WITH_TEMPLATE_ID";
+const EMAILJS_PUBLIC_KEY  = "REPLACE_WITH_PUBLIC_KEY";
+const PORTAL_URL          = "https://piano408studios.github.io/portal.html"; // your portal URL
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
 let selectedStudentId   = null;
 let selectedStudentName = null;
 
@@ -683,13 +697,32 @@ async function handleAddRecap(e) {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    succEl.textContent = '✓ Recap saved successfully!';
+    // Send email notification to student
+    try {
+      const studentDoc = await db.collection('students').doc(selectedStudentId).get();
+      const studentData = studentDoc.data();
+      const firstName = studentData.name ? studentData.name.split(' ')[0] : studentData.email;
+      const formattedDate = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        to_email:     studentData.email,
+        to_name:      firstName,
+        lesson_title: title,
+        lesson_date:  formattedDate,
+        portal_url:   PORTAL_URL,
+      });
+      succEl.textContent = '✓ Recap saved and student notified!';
+    } catch(emailErr) {
+      // Don't fail the whole save if email doesn't send
+      succEl.textContent = '✓ Recap saved! (Email notification failed — check EmailJS setup)';
+      console.warn('EmailJS error:', emailErr);
+    }
+
     btn.textContent = 'Saved!';
     setTimeout(() => {
       closeModal('add-recap-modal');
       loadRecapsForStudent(selectedStudentId);
       loadStudents();
-    }, 1200);
+    }, 1500);
   } catch(err) {
     errEl.textContent = 'Error: ' + err.message;
     btn.textContent = 'Save Recap'; btn.disabled = false;
