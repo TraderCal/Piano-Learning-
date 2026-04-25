@@ -421,7 +421,7 @@ let selectedStudentName = null;
 // ── Auth state ─────────────────────────────────────────────────────
 auth.onAuthStateChanged(user => {
   if (user) {
-    if (user.email !== TEACHER_EMAIL) {
+    if (user.email.toLowerCase() !== TEACHER_EMAIL.toLowerCase()) {
       alert('Access denied. This dashboard is for the teacher only.');
       auth.signOut(); return;
     }
