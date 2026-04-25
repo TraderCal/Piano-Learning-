@@ -388,7 +388,7 @@ async function loadRecaps(uid) {
 
       const files = (r.attachments || []).length ? `
         <div class="recap-files">
-          ${r.attachments.map(f => `<a href="${esc(f.url)}" target="_blank" class="file-chip">📄 ${esc(f.name)}</a>`).join('')}
+          ${r.attachments.map(f => `<a href="${esc(f.url)}" target="_blank" class="file-chip" download="${esc(f.name)}">📄 ${esc(f.name)}</a>`).join('')}
         </div>` : '';
 
       return `
