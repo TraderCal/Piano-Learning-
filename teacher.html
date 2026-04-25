@@ -124,6 +124,14 @@
     }
     .student-item:hover { background: var(--surface2); }
     .student-item.active { background: var(--surface2); border-color: rgba(232,200,122,0.2); }
+    .btn-delete-student {
+      display: none; flex-shrink: 0;
+      background: none; border: none; color: var(--text-dim);
+      font-size: 13px; cursor: pointer; padding: 4px 6px;
+      border-radius: 5px; transition: all 0.15s; line-height: 1;
+    }
+    .btn-delete-student:hover { color: var(--rose); background: rgba(251,113,133,0.1); }
+    .student-item:hover .btn-delete-student { display: block; }
     .student-avatar {
       width: 34px; height: 34px; border-radius: 50%;
       background: linear-gradient(135deg, var(--teal), var(--lavender));
@@ -478,6 +486,8 @@ async function loadStudents() {
             <div class="student-name">${esc(s.name)}</div>
             <div class="student-count">${count} recap${count !== 1 ? 's' : ''}</div>
           </div>
+          <button class="btn-delete-student" title="Remove student"
+            onclick="event.stopPropagation(); deleteStudent('${doc.id}','${esc(s.name)}')">✕</button>
         </div>`;
     }).join('');
   } catch(err) {
@@ -562,6 +572,31 @@ async function deleteRecap(recapId, studentUid) {
     loadStudents();
   } catch(err) {
     alert('Error deleting recap: ' + err.message);
+  }
+}
+
+// ── Delete student ─────────────────────────────────────────────────
+async function deleteStudent(uid, name) {
+  if (!confirm(`Remove ${name}? This will also delete all their recaps and cannot be undone.`)) return;
+  try {
+    // Delete all their recaps first
+    const recaps = await db.collection('recaps').where('studentUid', '==', uid).get();
+    const batch = db.batch();
+    recaps.forEach(doc => batch.delete(doc.ref));
+    batch.delete(db.collection('students').doc(uid));
+    await batch.commit();
+    // Clear main panel if this student was selected
+    if (selectedStudentId === uid) {
+      selectedStudentId = null; selectedStudentName = null;
+      document.getElementById('main-panel').innerHTML = `
+        <div class="no-selection"><div class="no-selection-inner">
+          <div class="no-selection-icon">👈</div>
+          <div class="no-selection-text">Select a student to view their recaps</div>
+        </div></div>`;
+    }
+    loadStudents();
+  } catch(err) {
+    alert('Error removing student: ' + err.message);
   }
 }
 
