@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard — Piano408 Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- Storage SDK removed — using YouTube + Google Drive links instead -->
+  <style>
+    :root {
+      --bg:       #0a0b10;
+      --surface:  #13141c;
+      --surface2: #1a1b26;
+      --border:   #2a2d42;
+      --text:     #e8e9f0;
+      --text-dim: #7a7d9a;
+      --gold:     #e8c87a;
+      --teal:     #5eead4;
+      --lavender: #a78bfa;
+      --rose:     #fb7185;
+      --green:    #4ade80;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; }
+
+    /* ── Login screen ──────────────────────────────── */
+    #login-screen {
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center; padding: 24px;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(232,200,122,0.06) 0%, transparent 70%);
+    }
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 40px 36px 36px;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+    .login-logo { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--gold); margin-bottom: 2px; }
+    .login-sub  { font-size: 12px; color: var(--text-dim); margin-bottom: 28px;
+      font-family: 'DM Mono', monospace; letter-spacing: 0.05em; text-transform: uppercase; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-dim);
+      margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .field input, .field textarea, .field select {
+      width: 100%; padding: 11px 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text); font-size: 14px;
+      font-family: 'Outfit', sans-serif; outline: none; transition: border-color 0.18s;
+    }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--gold); }
+    .field textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+    .field select { cursor: pointer; }
+    .btn-primary {
+      width: 100%; padding: 12px; background: var(--gold); color: #0a0b10;
+      border: none; border-radius: 9px;
+      font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif;
+      cursor: pointer; transition: opacity 0.18s;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:disabled { opacity: 0.45; cursor: default; }
+    .login-error { font-size: 12px; color: var(--rose); margin-top: 10px; min-height: 18px; text-align: center; }
+
+    /* ── Dashboard layout ──────────────────────────── */
+    #dashboard { display: none; flex-direction: column; height: 100vh; }
+    .dash-header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 13px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .dash-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--gold); }
+    .dash-badge {
+      font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--gold);
+      background: rgba(232,200,122,0.1); border: 1px solid rgba(232,200,122,0.25);
+      padding: 3px 10px; border-radius: 20px; margin-left: 12px;
+    }
+    .dash-right { display: flex; align-items: center; gap: 14px; }
+    .dash-email { font-size: 12px; color: var(--text-dim); }
+    .btn-sm {
+      font-size: 12px; padding: 6px 14px;
+      border: 1px solid var(--border); border-radius: 20px;
+      background: none; color: var(--text-dim);
+      cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.18s;
+    }
+    .btn-sm:hover { border-color: var(--rose); color: var(--rose); }
+
+    .dash-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Student sidebar ───────────────────────────── */
+    .student-sidebar {
+      width: 270px; flex-shrink: 0;
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-head {
+      padding: 18px 16px 14px;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .sidebar-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px;
+    }
+    .btn-add-student {
+      width: 100%; padding: 9px 14px; text-align: left;
+      background: rgba(232,200,122,0.08); border: 1px dashed rgba(232,200,122,0.3);
+      border-radius: 9px; color: var(--gold); font-size: 13px; font-weight: 500;
+      font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.18s;
+    }
+    .btn-add-student:hover { background: rgba(232,200,122,0.14); }
+    .student-list { flex: 1; overflow-y: auto; padding: 8px 8px; }
+    .student-list::-webkit-scrollbar { width: 4px; }
+    .student-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .student-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 10px; border-radius: 9px;
+      cursor: pointer; transition: background 0.15s;
+      border: 1px solid transparent;
+    }
+    .student-item:hover { background: var(--surface2); }
+    .student-item.active { background: var(--surface2); border-color: rgba(232,200,122,0.2); }
+    .student-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--lavender));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #0a0b10; flex-shrink: 0;
+      text-transform: uppercase;
+    }
+    .student-info { flex: 1; min-width: 0; }
+    .student-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .student-count { font-size: 11px; color: var(--text-dim); }
+
+    /* ── Main panel ────────────────────────────────── */
+    .main-panel { flex: 1; overflow-y: auto; padding: 32px 36px 60px; }
+    .main-panel::-webkit-scrollbar { width: 6px; }
+    .main-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .no-selection {
+      display: flex; align-items: center; justify-content: center;
+      height: 100%; text-align: center;
+    }
+    .no-selection-inner { opacity: 0.45; }
+    .no-selection-icon { font-size: 52px; margin-bottom: 14px; }
+    .no-selection-text { font-size: 14px; color: var(--text-dim); }
+
+    .student-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .student-title { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text); }
+    .student-email-tag { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+    .btn-new-recap {
+      padding: 10px 20px; background: var(--gold); color: #0a0b10;
+      border: none; border-radius: 9px; font-size: 13px; font-weight: 600;
+      font-family: 'Outfit', sans-serif; cursor: pointer; transition: opacity 0.18s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-new-recap:hover { opacity: 0.88; }
+
+    /* recap rows */
+    .recap-row {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 18px; margin-bottom: 12px;
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: border-color 0.18s;
+    }
+    .recap-row:hover { border-color: rgba(232,200,122,0.2); }
+    .rr-date {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; text-align: center; min-width: 48px; flex-shrink: 0;
+    }
+    .rr-month { font-size: 9px; font-weight: 700; color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase; }
+    .rr-day   { font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.1; }
+    .rr-body  { flex: 1; }
+    .rr-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .rr-preview { font-size: 12px; color: var(--text-dim); font-weight: 300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px; }
+    .rr-tags  { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .rr-tag {
+      font-size: 10px; padding: 2px 9px; border-radius: 20px;
+      border: 1px solid var(--border); color: var(--text-dim);
+    }
+    .rr-tag.has-video { border-color: rgba(94,234,212,0.4); color: var(--teal); }
+    .rr-tag.has-files { border-color: rgba(167,139,250,0.4); color: var(--lavender); }
+    .btn-delete-recap {
+      flex-shrink: 0; padding: 6px 10px; border-radius: 7px;
+      border: 1px solid var(--border); background: none;
+      color: var(--text-dim); font-size: 12px; cursor: pointer;
+      font-family: 'Outfit', sans-serif; transition: all 0.15s;
+    }
+    .btn-delete-recap:hover { border-color: var(--rose); color: var(--rose); }
+
+    /* loading */
+    .spinner { width: 30px; height: 30px; border-radius: 50%;
+      border: 2px solid var(--border); border-top-color: var(--gold);
+      animation: spin 0.75s linear infinite; margin: 50px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Modal overlay ─────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(5,6,12,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; width: 100%; max-width: 540px;
+      max-height: 90vh; overflow-y: auto;
+      padding: 32px 32px 28px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+    }
+    .modal::-webkit-scrollbar { width: 4px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .modal-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); margin-bottom: 6px; }
+    .modal-subtitle { font-size: 13px; color: var(--text-dim); font-weight: 300; margin-bottom: 26px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .btn-cancel {
+      padding: 10px 18px; border: 1px solid var(--border); border-radius: 9px;
+      background: none; color: var(--text-dim); font-size: 13px;
+      font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.18s;
+    }
+    .btn-cancel:hover { border-color: var(--text-dim); color: var(--text); }
+    .btn-submit {
+      padding: 10px 22px; background: var(--gold); color: #0a0b10;
+      border: none; border-radius: 9px; font-size: 13px; font-weight: 600;
+      font-family: 'Outfit', sans-serif; cursor: pointer; transition: opacity 0.18s;
+    }
+    .btn-submit:hover { opacity: 0.88; }
+    .btn-submit:disabled { opacity: 0.45; cursor: default; }
+
+    /* file upload area */
+    .upload-zone {
+      border: 2px dashed var(--border); border-radius: 10px;
+      padding: 22px; text-align: center; cursor: pointer;
+      transition: all 0.18s; color: var(--text-dim); font-size: 13px;
+    }
+    .upload-zone:hover { border-color: var(--gold); color: var(--gold); background: rgba(232,200,122,0.04); }
+    .upload-zone input { display: none; }
+    .upload-icon { font-size: 26px; margin-bottom: 6px; }
+    .upload-hint { font-size: 11px; margin-top: 4px; opacity: 0.7; }
+    .file-chosen { font-size: 12px; color: var(--teal); margin-top: 8px; font-weight: 500; }
+
+    /* progress */
+    .progress-wrap { margin-top: 14px; display: none; }
+    .progress-label { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; }
+    .progress-bar-bg { background: var(--surface2); border-radius: 99px; height: 6px; overflow: hidden; }
+    .progress-bar-fill { background: var(--gold); height: 100%; border-radius: 99px; width: 0%; transition: width 0.3s; }
+
+    .modal-error { font-size: 12px; color: var(--rose); margin-top: 8px; min-height: 18px; }
+    .modal-success { font-size: 12px; color: var(--green); margin-top: 8px; min-height: 18px; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Piano408 Studios</div>
+    <div class="login-sub">Teacher Dashboard</div>
+    <form onsubmit="handleLogin(event)">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="l-email" placeholder="your@email.com" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="l-pass" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-primary" id="l-btn">Sign In</button>
+      <div class="login-error" id="l-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════ -->
+<div id="dashboard">
+  <header class="dash-header">
+    <div style="display:flex;align-items:center;">
+      <div class="dash-logo">Piano408 Studios</div>
+      <span class="dash-badge">Teacher</span>
+    </div>
+    <div class="dash-right">
+      <span class="dash-email" id="d-email"></span>
+      <button class="btn-sm" onclick="firebase.auth().signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <div class="dash-body">
+    <!-- Student sidebar -->
+    <div class="student-sidebar">
+      <div class="sidebar-head">
+        <div class="sidebar-label">Students</div>
+        <button class="btn-add-student" onclick="openAddStudent()">＋ Add Student</button>
+      </div>
+      <div class="student-list" id="student-list">
+        <div class="spinner" style="margin:30px auto;width:24px;height:24px;"></div>
+      </div>
+    </div>
+
+    <!-- Main panel -->
+    <div class="main-panel" id="main-panel">
+      <div class="no-selection">
+        <div class="no-selection-inner">
+          <div class="no-selection-icon">👈</div>
+          <div class="no-selection-text">Select a student to view their recaps</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     ADD STUDENT MODAL
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="add-student-modal">
+  <div class="modal">
+    <div class="modal-title">Add Student</div>
+    <div class="modal-subtitle">Students register at portal.html using this email address.</div>
+    <form onsubmit="handleAddStudent(event)">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="as-name" placeholder="First Last" required>
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="as-email" placeholder="student@email.com" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeModal('add-student-modal')">Cancel</button>
+        <button type="submit" class="btn-submit" id="as-btn">Add Student</button>
+      </div>
+      <div class="modal-error" id="as-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     ADD RECAP MODAL
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="add-recap-modal">
+  <div class="modal">
+    <div class="modal-title">New Lesson Recap</div>
+    <div class="modal-subtitle" id="recap-modal-subtitle">Adding recap for student</div>
+    <form onsubmit="handleAddRecap(event)">
+      <div style="display:flex;gap:14px;">
+        <div class="field" style="flex:2;">
+          <label>Lesson Title</label>
+          <input type="text" id="rc-title" placeholder="e.g. Chord Inversions + Scales" required>
+        </div>
+        <div class="field" style="flex:1;">
+          <label>Date</label>
+          <input type="date" id="rc-date" required>
+        </div>
+      </div>
+      <div class="field">
+        <label>Notes (what was covered, what to practice)</label>
+        <textarea id="rc-notes" placeholder="Today we worked on...&#10;&#10;Practice this week:&#10;• ..." rows="5"></textarea>
+      </div>
+      <div class="field">
+        <label>YouTube Video URL (optional)</label>
+        <input type="url" id="rc-video-url" placeholder="https://www.youtube.com/watch?v=… (set video to Unlisted)">
+        <div style="font-size:11px;color:var(--text-dim);margin-top:5px;">Upload to YouTube → set visibility to <strong style="color:var(--gold)">Unlisted</strong> → paste the link here</div>
+      </div>
+      <div class="field">
+        <label>Attachments — Google Drive PDFs / Sheet Music (optional)</label>
+        <div id="attachments-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
+        <button type="button" onclick="addAttachmentRow()" style="width:100%;padding:9px;border:1px dashed var(--border);border-radius:9px;background:none;color:var(--text-dim);font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.18s;" onmouseover="this.style.borderColor='var(--lavender)';this.style.color='var(--lavender)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'">＋ Add Attachment</button>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:5px;">Upload to Google Drive → Share → "Anyone with the link" → paste link here</div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeModal('add-recap-modal')">Cancel</button>
+        <button type="submit" class="btn-submit" id="rc-btn">Save Recap</button>
+      </div>
+      <div class="modal-error" id="rc-error"></div>
+      <div class="modal-success" id="rc-success"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     FIREBASE CONFIG + LOGIC
+════════════════════════════════════════ -->
+<script>
+// ──────────────────────────────────────────────────────────────────
+//  SETUP: Replace with your Firebase config
+// ──────────────────────────────────────────────────────────────────
+const firebaseConfig = {
+ apiKey: "AIzaSyA4D-220YrimNT-Uy8z_v7Ep2JJe-aQTlw",
+  authDomain: "piano408studios.firebaseapp.com",
+  databaseURL: "https://piano408studios-default-rtdb.firebaseio.com",
+  projectId: "piano408studios",
+  storageBucket: "piano408studios.firebasestorage.app",
+  messagingSenderId: "51878762267",
+  appId: "1:51878762267:web:f4deade076c3088e3965be",
+  measurementId: "G-G1VJFYFSK9"
+};
+
+// ──────────────────────────────────────────────────────────────────
+//  SETUP: Set this to YOUR email address (the teacher login email)
+// ──────────────────────────────────────────────────────────────────
+const TEACHER_EMAIL = "Lessons@piano408studios.com";
+
+firebase.initializeApp(firebaseConfig);
+const auth    = firebase.auth();
+const db      = firebase.firestore();
+// No storage needed — using external URLs
+
+let selectedStudentId   = null;
+let selectedStudentName = null;
+
+// ── Auth state ─────────────────────────────────────────────────────
+auth.onAuthStateChanged(user => {
+  if (user) {
+    if (user.email !== TEACHER_EMAIL) {
+      alert('Access denied. This dashboard is for the teacher only.');
+      auth.signOut(); return;
+    }
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display    = 'flex';
+    document.getElementById('d-email').textContent        = user.email;
+    loadStudents();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('dashboard').style.display    = 'none';
+  }
+});
+
+// ── Login ──────────────────────────────────────────────────────────
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const errEl = document.getElementById('l-error');
+  const btn   = document.getElementById('l-btn');
+  errEl.textContent = '';
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(err) {
+    errEl.textContent = friendlyError(err.code);
+    btn.textContent = 'Sign In'; btn.disabled = false;
+  }
+}
+
+// ── Load student list ──────────────────────────────────────────────
+async function loadStudents() {
+  const listEl = document.getElementById('student-list');
+  try {
+    const snap = await db.collection('students').orderBy('name').get();
+    if (snap.empty) {
+      listEl.innerHTML = `<div style="padding:20px 10px;font-size:12px;color:var(--text-dim);text-align:center;line-height:1.6">No students yet.<br>Click + Add Student to get started.</div>`;
+      return;
+    }
+    // Count recaps per student
+    const counts = {};
+    const recapSnap = await db.collection('recaps').get();
+    recapSnap.forEach(d => { const sid = d.data().studentUid; counts[sid] = (counts[sid] || 0) + 1; });
+
+    listEl.innerHTML = snap.docs.map(doc => {
+      const s = doc.data();
+      const initials = s.name ? s.name.split(' ').map(w=>w[0]).slice(0,2).join('') : '?';
+      const count = counts[doc.id] || 0;
+      return `
+        <div class="student-item${doc.id === selectedStudentId ? ' active' : ''}"
+             id="si-${doc.id}" onclick="selectStudent('${doc.id}','${esc(s.name)}','${esc(s.email)}')">
+          <div class="student-avatar">${initials}</div>
+          <div class="student-info">
+            <div class="student-name">${esc(s.name)}</div>
+            <div class="student-count">${count} recap${count !== 1 ? 's' : ''}</div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(err) {
+    listEl.innerHTML = `<div style="padding:20px 10px;font-size:12px;color:var(--rose);">Error: ${err.message}</div>`;
+  }
+}
+
+// ── Select student ─────────────────────────────────────────────────
+async function selectStudent(uid, name, email) {
+  selectedStudentId   = uid;
+  selectedStudentName = name;
+
+  // Highlight in sidebar
+  document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('si-' + uid);
+  if (el) el.classList.add('active');
+
+  const panel = document.getElementById('main-panel');
+  panel.innerHTML = `
+    <div class="student-header">
+      <div>
+        <div class="student-title">${esc(name)}</div>
+        <div class="student-email-tag">${esc(email)}</div>
+      </div>
+      <button class="btn-new-recap" onclick="openAddRecap()">＋ New Recap</button>
+    </div>
+    <div id="recaps-list"><div class="spinner"></div></div>`;
+
+  loadRecapsForStudent(uid);
+}
+
+// ── Load recaps for student ────────────────────────────────────────
+async function loadRecapsForStudent(uid) {
+  const listEl = document.getElementById('recaps-list');
+  if (!listEl) return;
+  try {
+    const snap = await db.collection('recaps')
+      .where('studentUid', '==', uid)
+      .orderBy('date', 'desc')
+      .get();
+
+    if (snap.empty) {
+      listEl.innerHTML = `<div style="padding:40px 0;text-align:center;font-size:13px;color:var(--text-dim);opacity:0.6;">No recaps yet. Click + New Recap to add the first one.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = snap.docs.map(doc => {
+      const r = doc.data();
+      const d = new Date(r.date + 'T12:00:00');
+      const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+      const day   = d.getDate();
+      const tags = [
+        r.videoUrl ? `<span class="rr-tag has-video">🎬 Video</span>` : '',
+        (r.attachments && r.attachments.length) ? `<span class="rr-tag has-files">📄 ${r.attachments.length} file${r.attachments.length > 1 ? 's' : ''}</span>` : '',
+        r.notes ? '' : '',
+      ].filter(Boolean).join('');
+      return `
+        <div class="recap-row">
+          <div class="rr-date">
+            <div class="rr-month">${month}</div>
+            <div class="rr-day">${day}</div>
+          </div>
+          <div class="rr-body">
+            <div class="rr-title">${esc(r.title || 'Lesson Recap')}</div>
+            ${r.notes ? `<div class="rr-preview">${esc(r.notes.substring(0, 120))}${r.notes.length > 120 ? '…' : ''}</div>` : ''}
+            ${tags ? `<div class="rr-tags">${tags}</div>` : ''}
+          </div>
+          <button class="btn-delete-recap" onclick="deleteRecap('${doc.id}', '${uid}')">Delete</button>
+        </div>`;
+    }).join('');
+  } catch(err) {
+    if (listEl) listEl.innerHTML = `<div style="font-size:12px;color:var(--rose);">Error: ${err.message}</div>`;
+  }
+}
+
+// ── Delete recap ───────────────────────────────────────────────────
+async function deleteRecap(recapId, studentUid) {
+  if (!confirm('Delete this recap? This cannot be undone.')) return;
+  try {
+    await db.collection('recaps').doc(recapId).delete();
+    loadRecapsForStudent(studentUid);
+    loadStudents();
+  } catch(err) {
+    alert('Error deleting recap: ' + err.message);
+  }
+}
+
+// ── Add student modal ──────────────────────────────────────────────
+function openAddStudent() { openModal('add-student-modal'); }
+
+async function handleAddStudent(e) {
+  e.preventDefault();
+  const name  = document.getElementById('as-name').value.trim();
+  const email = document.getElementById('as-email').value.trim();
+  const errEl = document.getElementById('as-error');
+  const btn   = document.getElementById('as-btn');
+  errEl.textContent = '';
+  btn.textContent = 'Adding…'; btn.disabled = true;
+
+  try {
+    // Store in a pre-approved list — student will link on first login
+    await db.collection('students').add({
+      name, email, uid: '', // blank until student logs in
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal('add-student-modal');
+    document.getElementById('as-name').value  = '';
+    document.getElementById('as-email').value = '';
+    loadStudents();
+  } catch(err) {
+    errEl.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.textContent = 'Add Student'; btn.disabled = false;
+  }
+}
+
+// ── Add recap modal ────────────────────────────────────────────────
+function openAddRecap() {
+  if (!selectedStudentId) return;
+  document.getElementById('recap-modal-subtitle').textContent = `Adding recap for ${selectedStudentName}`;
+  document.getElementById('rc-date').value    = new Date().toISOString().slice(0,10);
+  document.getElementById('rc-title').value   = '';
+  document.getElementById('rc-notes').value   = '';
+  document.getElementById('rc-video-url').value = '';
+  document.getElementById('rc-error').textContent   = '';
+  document.getElementById('rc-success').textContent = '';
+  document.getElementById('attachments-list').innerHTML = '';
+  openModal('add-recap-modal');
+}
+
+function addAttachmentRow() {
+  const list = document.getElementById('attachments-list');
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;';
+  row.innerHTML = `
+    <input type="text" placeholder="Label (e.g. Scale Sheet)" style="flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;">
+    <input type="url" placeholder="Google Drive link" style="flex:2;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;">
+    <button type="button" onclick="this.parentElement.remove()" style="padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:none;color:var(--text-dim);cursor:pointer;font-size:13px;">✕</button>`;
+  list.appendChild(row);
+}
+
+async function handleAddRecap(e) {
+  e.preventDefault();
+  const title    = document.getElementById('rc-title').value.trim();
+  const date     = document.getElementById('rc-date').value;
+  const notes    = document.getElementById('rc-notes').value.trim();
+  const videoUrl = document.getElementById('rc-video-url').value.trim();
+  const errEl    = document.getElementById('rc-error');
+  const succEl   = document.getElementById('rc-success');
+  const btn      = document.getElementById('rc-btn');
+
+  // Collect attachment rows
+  const attachments = [];
+  document.querySelectorAll('#attachments-list > div').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const name = inputs[0].value.trim();
+    const url  = inputs[1].value.trim();
+    if (name && url) attachments.push({ name, url });
+  });
+
+  errEl.textContent = ''; succEl.textContent = '';
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  try {
+    await db.collection('recaps').add({
+      studentUid: selectedStudentId,
+      title, date, notes, videoUrl, attachments,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    succEl.textContent = '✓ Recap saved successfully!';
+    btn.textContent = 'Saved!';
+    setTimeout(() => {
+      closeModal('add-recap-modal');
+      loadRecapsForStudent(selectedStudentId);
+      loadStudents();
+    }, 1200);
+  } catch(err) {
+    errEl.textContent = 'Error: ' + err.message;
+    btn.textContent = 'Save Recap'; btn.disabled = false;
+  }
+}
+
+// ── Modal helpers ──────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(el => el.classList.remove('open')); });
+
+// ── Helpers ────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function friendlyError(code) {
+  return ({
+    'auth/user-not-found':     'No account found with that email.',
+    'auth/wrong-password':     'Incorrect password.',
+    'auth/invalid-credential': 'Email or password is incorrect.',
+    'auth/invalid-email':      'Please enter a valid email.',
+    'auth/too-many-requests':  'Too many attempts. Try again later.',
+  })[code] || 'Something went wrong. Please try again.';
+}
+</script>
+</body>
+</html>

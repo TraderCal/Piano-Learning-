@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Lessons — Piano408 Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --bg:       #0a0b10;
+      --surface:  #13141c;
+      --surface2: #1a1b26;
+      --border:   #2a2d42;
+      --text:     #e8e9f0;
+      --text-dim: #7a7d9a;
+      --gold:     #e8c87a;
+      --teal:     #5eead4;
+      --lavender: #a78bfa;
+      --rose:     #fb7185;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; }
+
+    /* ── Auth screen ─────────────────────────────── */
+    #auth-screen {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(232,200,122,0.06) 0%, transparent 70%);
+    }
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 40px 36px 36px;
+      width: 100%; max-width: 390px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+    .auth-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px; color: var(--gold);
+      margin-bottom: 2px; letter-spacing: 0.01em;
+    }
+    .auth-subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 28px; font-weight: 300; }
+
+    /* tabs */
+    .auth-tabs { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+    .auth-tab {
+      flex: 1; padding: 9px 0; text-align: center;
+      font-size: 13px; font-weight: 500; color: var(--text-dim);
+      cursor: pointer; border-bottom: 2px solid transparent;
+      transition: all 0.2s; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none;
+      font-family: 'Outfit', sans-serif;
+    }
+    .auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    .auth-panel { display: none; }
+    .auth-panel.active { display: block; }
+
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block; font-size: 11px; font-weight: 600;
+      color: var(--text-dim); margin-bottom: 6px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .field input {
+      width: 100%; padding: 11px 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text); font-size: 14px;
+      font-family: 'Outfit', sans-serif; outline: none;
+      transition: border-color 0.18s;
+    }
+    .field input:focus { border-color: var(--gold); }
+    .btn-auth {
+      width: 100%; padding: 12px; margin-top: 4px;
+      background: var(--gold); color: #0a0b10;
+      border: none; border-radius: 9px;
+      font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif;
+      cursor: pointer; transition: opacity 0.18s;
+    }
+    .btn-auth:hover { opacity: 0.88; }
+    .btn-auth:disabled { opacity: 0.55; cursor: default; }
+    .auth-error { font-size: 12px; color: var(--rose); margin-top: 10px; min-height: 18px; text-align: center; }
+    .auth-hint { font-size: 12px; color: var(--text-dim); margin-top: 14px; text-align: center; }
+    .auth-hint a { color: var(--text-dim); text-decoration: underline; cursor: pointer; }
+    .auth-hint a:hover { color: var(--gold); }
+
+    /* ── Portal screen ───────────────────────────── */
+    #portal-screen { display: none; }
+    .portal-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .portal-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--gold); }
+    .portal-right { display: flex; align-items: center; gap: 14px; }
+    .portal-email { font-size: 12px; color: var(--text-dim); }
+    .btn-signout {
+      font-size: 12px; padding: 5px 14px;
+      border: 1px solid var(--border); border-radius: 20px;
+      background: none; color: var(--text-dim); cursor: pointer;
+      font-family: 'Outfit', sans-serif; transition: all 0.18s;
+    }
+    .btn-signout:hover { border-color: var(--rose); color: var(--rose); }
+
+    .portal-body { max-width: 740px; margin: 0 auto; padding: 44px 24px 60px; }
+    .portal-greeting {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px; color: var(--text); margin-bottom: 4px;
+    }
+    .portal-tagline { font-size: 13px; font-weight: 300; color: var(--text-dim); margin-bottom: 40px; }
+
+    /* recap list */
+    .recap-list { display: flex; flex-direction: column; gap: 22px; }
+    .recap-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .recap-card:hover { border-color: rgba(232,200,122,0.25); }
+    .recap-card-header {
+      padding: 18px 22px 16px;
+      display: flex; align-items: flex-start; gap: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .date-badge {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 8px 12px;
+      text-align: center; min-width: 54px; flex-shrink: 0;
+    }
+    .date-month { font-size: 10px; font-weight: 700; color: var(--teal); letter-spacing: 0.12em; text-transform: uppercase; }
+    .date-day   { font-size: 24px; font-weight: 600; color: var(--text); line-height: 1.1; }
+    .recap-meta { flex: 1; padding-top: 2px; }
+    .recap-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .recap-num {
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .recap-body { padding: 20px 22px; }
+    .recap-notes {
+      font-size: 14px; font-weight: 300; color: var(--text-dim);
+      line-height: 1.8; margin-bottom: 20px; white-space: pre-wrap;
+    }
+    .recap-video {
+      border-radius: 10px; overflow: hidden;
+      background: #000; margin-bottom: 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    .recap-video video { width: 100%; display: block; max-height: 400px; object-fit: contain; }
+    .recap-files { display: flex; flex-wrap: wrap; gap: 8px; }
+    .file-chip {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 7px 16px; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--surface2);
+      font-size: 12px; color: var(--text-dim);
+      text-decoration: none; transition: all 0.18s;
+    }
+    .file-chip:hover { border-color: var(--lavender); color: var(--lavender); background: rgba(167,139,250,0.07); }
+
+    /* empty / loading */
+    .empty-state { text-align: center; padding: 70px 20px; }
+    .empty-icon { font-size: 52px; margin-bottom: 18px; }
+    .empty-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); margin-bottom: 8px; }
+    .empty-text  { font-size: 13px; font-weight: 300; color: var(--text-dim); line-height: 1.7; }
+    .spinner {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--border); border-top-color: var(--gold);
+      animation: spin 0.75s linear infinite; margin: 70px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     AUTH SCREEN
+════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">Piano408 Studios</div>
+    <div class="auth-subtitle">Student Portal — access your personal lesson recaps</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('signin')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- Sign In -->
+    <div class="auth-panel active" id="tab-signin">
+      <form onsubmit="handleSignIn(event)">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="si-email" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="si-pass" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-auth" id="si-btn">Sign In</button>
+        <div class="auth-error" id="si-error"></div>
+        <div class="auth-hint"><a onclick="handleForgotPassword()">Forgot your password?</a></div>
+      </form>
+    </div>
+
+    <!-- Register -->
+    <div class="auth-panel" id="tab-register">
+      <form onsubmit="handleRegister(event)">
+        <div class="field">
+          <label>Your Name</label>
+          <input type="text" id="reg-name" placeholder="First Last" required>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="reg-pass" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn-auth" id="reg-btn">Create Account</button>
+        <div class="auth-error" id="reg-error"></div>
+        <div class="auth-hint" style="line-height:1.5">Use the email Calvin registered you with.<br>New here? <a onclick="switchTab('signin')">Sign in instead.</a></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PORTAL SCREEN
+════════════════════════════════════════ -->
+<div id="portal-screen">
+  <header class="portal-header">
+    <div class="portal-logo">Piano408 Studios</div>
+    <div class="portal-right">
+      <span class="portal-email" id="portal-email"></span>
+      <button class="btn-signout" onclick="firebase.auth().signOut()">Sign out</button>
+    </div>
+  </header>
+  <div class="portal-body">
+    <h1 class="portal-greeting" id="portal-greeting">Welcome back</h1>
+    <p class="portal-tagline">Your personal lesson recaps from Calvin</p>
+    <div id="recaps-container"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     FIREBASE CONFIG + LOGIC
+════════════════════════════════════════ -->
+<script>
+// ──────────────────────────────────────────────────────────────────
+//  SETUP: Paste your Firebase config here
+//  Firebase Console → Project Settings → Your apps → Web → SDK setup
+// ──────────────────────────────────────────────────────────────────
+const firebaseConfig = {
+apiKey: "AIzaSyA4D-220YrimNT-Uy8z_v7Ep2JJe-aQTlw",
+  authDomain: "piano408studios.firebaseapp.com",
+  databaseURL: "https://piano408studios-default-rtdb.firebaseio.com",
+  projectId: "piano408studios",
+  storageBucket: "piano408studios.firebasestorage.app",
+  messagingSenderId: "51878762267",
+  appId: "1:51878762267:web:f4deade076c3088e3965be",
+  measurementId: "G-G1VJFYFSK9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── Tab switching ─────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='signin'?i===0:i===1)));
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+
+// ── Auth state ────────────────────────────────────────────────────
+auth.onAuthStateChanged(async user => {
+  const authScreen   = document.getElementById('auth-screen');
+  const portalScreen = document.getElementById('portal-screen');
+  if (user) {
+    authScreen.style.display   = 'none';
+    portalScreen.style.display = 'block';
+    document.getElementById('portal-email').textContent = user.email;
+    // Load name from Firestore
+    try {
+      const doc = await db.collection('students').doc(user.uid).get();
+      const name = doc.exists && doc.data().name ? doc.data().name.split(' ')[0] : user.email.split('@')[0];
+      document.getElementById('portal-greeting').textContent = `Welcome back, ${name} 🎹`;
+    } catch(e) {}
+    loadRecaps(user.uid);
+  } else {
+    authScreen.style.display   = 'flex';
+    portalScreen.style.display = 'none';
+  }
+});
+
+// ── Sign In ───────────────────────────────────────────────────────
+async function handleSignIn(e) {
+  e.preventDefault();
+  const email = document.getElementById('si-email').value.trim();
+  const pass  = document.getElementById('si-pass').value;
+  const errEl = document.getElementById('si-error');
+  const btn   = document.getElementById('si-btn');
+  errEl.textContent = '';
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(err) {
+    errEl.textContent = friendlyError(err.code);
+    btn.textContent = 'Sign In'; btn.disabled = false;
+  }
+}
+
+// ── Register ──────────────────────────────────────────────────────
+async function handleRegister(e) {
+  e.preventDefault();
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const errEl = document.getElementById('reg-error');
+  const btn   = document.getElementById('reg-btn');
+  errEl.textContent = '';
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    // Save student profile to Firestore
+    await db.collection('students').doc(cred.user.uid).set({
+      name, email, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(err) {
+    errEl.textContent = friendlyError(err.code);
+    btn.textContent = 'Create Account'; btn.disabled = false;
+  }
+}
+
+// ── Forgot password ───────────────────────────────────────────────
+async function handleForgotPassword() {
+  const email = document.getElementById('si-email').value.trim();
+  if (!email) { alert('Enter your email address in the field above, then click Forgot password.'); return; }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    alert('Password reset email sent! Check your inbox.');
+  } catch(err) {
+    alert(friendlyError(err.code));
+  }
+}
+
+// ── Load recaps ───────────────────────────────────────────────────
+async function loadRecaps(uid) {
+  const container = document.getElementById('recaps-container');
+  try {
+    const snap = await db.collection('recaps')
+      .where('studentUid', '==', uid)
+      .orderBy('date', 'desc')
+      .get();
+
+    if (snap.empty) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🎹</div>
+          <div class="empty-title">No recaps yet</div>
+          <div class="empty-text">Calvin will add your first lesson recap here after your session.<br>Check back soon!</div>
+        </div>`;
+      return;
+    }
+
+    let num = snap.size;
+    const cards = snap.docs.map(doc => {
+      const r = doc.data();
+      const d = new Date(r.date + 'T12:00:00'); // avoid timezone offset issues
+      const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+      const day   = d.getDate();
+      const n = num--;
+
+      const embedUrl = getYouTubeEmbedUrl(r.videoUrl);
+      const video = r.videoUrl ? (
+        embedUrl
+          ? `<div class="recap-video"><iframe src="${embedUrl}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="width:100%;aspect-ratio:16/9;border:none;"></iframe></div>`
+          : `<div class="recap-video"><video controls preload="metadata" playsinline><source src="${esc(r.videoUrl)}" type="video/mp4"></video></div>`
+      ) : '';
+
+      const files = (r.attachments || []).length ? `
+        <div class="recap-files">
+          ${r.attachments.map(f => `<a href="${esc(f.url)}" target="_blank" class="file-chip">📄 ${esc(f.name)}</a>`).join('')}
+        </div>` : '';
+
+      return `
+        <div class="recap-card">
+          <div class="recap-card-header">
+            <div class="date-badge">
+              <div class="date-month">${month}</div>
+              <div class="date-day">${day}</div>
+            </div>
+            <div class="recap-meta">
+              <div class="recap-title">${esc(r.title || 'Lesson Recap')}</div>
+              <div class="recap-num">Lesson ${n}</div>
+            </div>
+          </div>
+          <div class="recap-body">
+            ${r.notes ? `<div class="recap-notes">${esc(r.notes)}</div>` : ''}
+            ${video}
+            ${files}
+          </div>
+        </div>`;
+    }).join('');
+
+    container.innerHTML = `<div class="recap-list">${cards}</div>`;
+  } catch(err) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-text" style="color:var(--rose)">Could not load recaps: ${err.message}</div></div>`;
+  }
+}
+
+// ── YouTube embed helper ──────────────────────────────────────────
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+  if (url.includes('youtube.com/embed/')) return url;
+  const watchMatch = url.match(/[?&]v=([^&]+)/);
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+  const shortMatch = url.match(/youtu\.be\/([^?]+)/);
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  return null; // not a YouTube URL — fall back to <video> tag
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function friendlyError(code) {
+  return ({
+    'auth/user-not-found':     'No account found with that email.',
+    'auth/wrong-password':     'Incorrect password.',
+    'auth/invalid-credential': 'Email or password is incorrect.',
+    'auth/email-already-in-use': 'An account with this email already exists.',
+    'auth/weak-password':      'Password must be at least 6 characters.',
+    'auth/invalid-email':      'Please enter a valid email address.',
+    'auth/too-many-requests':  'Too many attempts. Please try again later.',
+  })[code] || 'Something went wrong. Please try again.';
+}
+</script>
+</body>
+</html>
