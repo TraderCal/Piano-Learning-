@@ -388,7 +388,7 @@ async function loadRecaps(uid) {
 
       const files = (r.attachments || []).length ? `
         <div class="recap-files">
-          ${r.attachments.map(f => `<a href="${esc(f.url)}" target="_blank" class="file-chip" download="${esc(f.name)}">📄 ${esc(f.name)}</a>`).join('')}
+          ${r.attachments.map(f => `<a href="${esc(cloudinaryDownloadUrl(f.url))}" target="_blank" class="file-chip">📄 ${esc(f.name)}</a>`).join('')}
         </div>` : '';
 
       return `
@@ -426,6 +426,14 @@ function getYouTubeEmbedUrl(url) {
   const shortMatch = url.match(/youtu\.be\/([^?]+)/);
   if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
   return null; // not a YouTube URL — fall back to <video> tag
+}
+
+// ── Cloudinary force-download helper ─────────────────────────────
+// Inserts fl_attachment into Cloudinary raw URLs so the browser
+// downloads the file instead of trying to render it inline
+function cloudinaryDownloadUrl(url) {
+  if (!url || !url.includes('res.cloudinary.com')) return url;
+  return url.replace('/raw/upload/', '/raw/upload/fl_attachment/');
 }
 
 // ── Helpers ───────────────────────────────────────────────────────
