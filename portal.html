@@ -429,17 +429,17 @@ function getYouTubeEmbedUrl(url) {
 }
 
 // ── PDF opener — fetch as blob so content-type is always correct ──
+// Window must be opened synchronously (before await) to pass popup blocker
 async function openPdf(url, name) {
+  const win = window.open('', '_blank'); // open immediately on click
   try {
     const resp = await fetch(url);
-    if (!resp.ok) throw new Error('Could not fetch file');
+    if (!resp.ok) throw new Error('fetch failed');
     const buffer = await resp.arrayBuffer();
     const blob   = new Blob([buffer], { type: 'application/pdf' });
-    const blobUrl = URL.createObjectURL(blob);
-    window.open(blobUrl, '_blank');
+    win.location.href = URL.createObjectURL(blob);
   } catch(e) {
-    // Fallback: open direct URL
-    window.open(url, '_blank');
+    win.location.href = url; // fallback to direct URL
   }
 }
 
