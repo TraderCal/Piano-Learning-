@@ -428,10 +428,22 @@ function getYouTubeEmbedUrl(url) {
   return null; // not a YouTube URL — fall back to <video> tag
 }
 
-// ── PDF opener — fetch as blob so content-type is always correct ──
-// Window must be opened synchronously (before await) to pass popup blocker
+// ── PDF opener — base64 data URLs open directly; fallback fetch for legacy URLs ──
 async function openPdf(url, name) {
-  const win = window.open('', '_blank'); // open immediately on click
+  // Base64 data URLs: convert to blob URL (works on iOS Safari + all browsers)
+  if (url.startsWith('data:')) {
+    try {
+      const res     = await fetch(url);
+      const blob    = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+    } catch(e) {
+      window.open(url, '_blank'); // last resort
+    }
+    return;
+  }
+  // Legacy external URLs — open window synchronously first to bypass popup blocker
+  const win = window.open('', '_blank');
   try {
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('fetch failed');
