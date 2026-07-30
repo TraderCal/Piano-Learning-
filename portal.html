@@ -164,6 +164,129 @@
     }
     .file-chip:hover { border-color: var(--lavender); color: var(--lavender); background: rgba(167,139,250,0.07); }
 
+    /* ── Portal tabs ─────────────────────────────── */
+    .portal-tabs {
+      display: flex; gap: 4px; margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .portal-tab {
+      padding: 10px 20px; font-size: 13px; font-weight: 500;
+      color: var(--text-dim); cursor: pointer; background: none;
+      border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -1px; transition: all 0.18s;
+      font-family: 'Outfit', sans-serif;
+    }
+    .portal-tab:hover { color: var(--text); }
+    .portal-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .portal-view { display: none; }
+    .portal-view.active { display: block; }
+
+    /* ── Practice stats ──────────────────────────── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin-bottom: 26px;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 13px; padding: 18px 16px; text-align: center;
+    }
+    .stat-value {
+      font-size: 30px; font-weight: 600; line-height: 1.1;
+      margin-bottom: 4px; font-family: 'Outfit', sans-serif;
+    }
+    .stat-label {
+      font-size: 10px; font-weight: 600; color: var(--text-dim);
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    @media (max-width: 520px) {
+      .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+      .stat-card { display: flex; align-items: center; justify-content: space-between; text-align: left; padding: 14px 18px; }
+      .stat-value { font-size: 24px; margin-bottom: 0; }
+    }
+
+    /* activity chart */
+    .activity-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 13px; padding: 20px 20px 16px; margin-bottom: 26px;
+    }
+    .activity-title {
+      font-size: 11px; font-weight: 600; color: var(--text-dim);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 18px;
+    }
+    .activity-bars {
+      display: flex; align-items: flex-end; gap: 5px; height: 90px;
+    }
+    .abar-col {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 6px; height: 100%;
+      justify-content: flex-end;
+    }
+    .abar {
+      width: 100%; border-radius: 4px 4px 0 0; min-height: 3px;
+      background: linear-gradient(180deg, var(--teal), rgba(94,234,212,0.35));
+      transition: opacity 0.18s; position: relative;
+    }
+    .abar.zero { background: var(--surface2); border: 1px solid var(--border); }
+    .abar-day {
+      font-size: 9px; color: var(--text-dim); font-family: 'DM Mono', monospace;
+    }
+
+    /* practice entry form */
+    .log-form {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 13px; padding: 20px; margin-bottom: 26px;
+    }
+    .log-form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .log-form-row .field { flex: 1; margin-bottom: 0; }
+    .log-form textarea {
+      width: 100%; padding: 11px 14px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 9px;
+      color: var(--text); font-size: 14px; font-family: 'Outfit', sans-serif;
+      outline: none; resize: vertical; min-height: 72px;
+      transition: border-color 0.18s;
+    }
+    .log-form textarea:focus { border-color: var(--gold); }
+    .btn-log {
+      width: 100%; padding: 11px; margin-top: 12px;
+      background: var(--teal); color: #0a0b10; border: none;
+      border-radius: 9px; font-size: 14px; font-weight: 600;
+      font-family: 'Outfit', sans-serif; cursor: pointer;
+      transition: opacity 0.18s;
+    }
+    .btn-log:hover { opacity: 0.88; }
+    .btn-log:disabled { opacity: 0.5; cursor: default; }
+    @media (max-width: 520px) { .log-form-row { flex-direction: column; gap: 12px; } }
+
+    /* practice entries */
+    .log-list { display: flex; flex-direction: column; gap: 10px; }
+    .log-entry {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 18px;
+      display: flex; align-items: flex-start; gap: 16px;
+      transition: border-color 0.2s;
+    }
+    .log-entry:hover { border-color: rgba(94,234,212,0.25); }
+    .log-date {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; text-align: center;
+      min-width: 50px; flex-shrink: 0;
+    }
+    .log-month { font-size: 9px; font-weight: 700; color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase; }
+    .log-day { font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.1; }
+    .log-body { flex: 1; min-width: 0; padding-top: 2px; }
+    .log-minutes {
+      font-size: 12px; font-weight: 600; color: var(--gold);
+      margin-bottom: 5px; font-family: 'DM Mono', monospace;
+    }
+    .log-notes { font-size: 13px; font-weight: 300; color: var(--text-dim); line-height: 1.65; white-space: pre-wrap; }
+    .btn-del-log {
+      background: none; border: none; color: var(--text-dim);
+      font-size: 16px; cursor: pointer; opacity: 0.35;
+      padding: 2px 6px; transition: all 0.18s; flex-shrink: 0;
+      font-family: 'Outfit', sans-serif; line-height: 1;
+    }
+    .btn-del-log:hover { opacity: 1; color: var(--rose); }
+
     /* empty / loading */
     .empty-state { text-align: center; padding: 70px 20px; }
     .empty-icon { font-size: 52px; margin-bottom: 18px; }
@@ -245,8 +368,58 @@
   </header>
   <div class="portal-body">
     <h1 class="portal-greeting" id="portal-greeting">Welcome back</h1>
-    <p class="portal-tagline">Your personal lesson recaps from Calvin</p>
-    <div id="recaps-container"><div class="spinner"></div></div>
+    <p class="portal-tagline">Your lesson recaps and practice log</p>
+
+    <div class="portal-tabs">
+      <button class="portal-tab active" onclick="switchView('recaps')">Lesson Recaps</button>
+      <button class="portal-tab" onclick="switchView('practice')">Practice Log</button>
+    </div>
+
+    <!-- Recaps view -->
+    <div class="portal-view active" id="view-recaps">
+      <div id="recaps-container"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Practice log view -->
+    <div class="portal-view" id="view-practice">
+      <!-- Stats -->
+      <div class="stats-grid" id="practice-stats">
+        <div class="stat-card"><div class="stat-value" style="color:var(--gold)">—</div><div class="stat-label">Day Streak</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--teal)">—</div><div class="stat-label">This Week</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--lavender)">—</div><div class="stat-label">Total Sessions</div></div>
+      </div>
+
+      <!-- Activity chart -->
+      <div class="activity-card">
+        <div class="activity-title">Last 14 Days</div>
+        <div class="activity-bars" id="activity-bars"></div>
+      </div>
+
+      <!-- Add entry form -->
+      <div class="log-form">
+        <form onsubmit="handleAddPractice(event)">
+          <div class="log-form-row">
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="pl-date" required>
+            </div>
+            <div class="field">
+              <label>Minutes</label>
+              <input type="number" id="pl-minutes" min="1" max="600" placeholder="30" required>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>What did you work on?</label>
+            <textarea id="pl-notes" placeholder="Scales in C and G, worked on the Maj9 voicing from last lesson, ran through measures 12–20 slowly…" required></textarea>
+          </div>
+          <button type="submit" class="btn-log" id="pl-btn">Log Practice Session</button>
+          <div class="auth-error" id="pl-error"></div>
+        </form>
+      </div>
+
+      <!-- Entries -->
+      <div id="practice-container"><div class="spinner"></div></div>
+    </div>
   </div>
 </div>
 
@@ -294,7 +467,9 @@ auth.onAuthStateChanged(async user => {
       const name = doc.exists && doc.data().name ? doc.data().name.split(' ')[0] : user.email.split('@')[0];
       document.getElementById('portal-greeting').textContent = `Welcome back, ${name} 🎹`;
     } catch(e) {}
+    document.getElementById('pl-date').value = todayStr();
     loadRecaps(user.uid);
+    loadPractice(user.uid);
   } else {
     authScreen.style.display   = 'flex';
     portalScreen.style.display = 'none';
@@ -414,6 +589,192 @@ async function loadRecaps(uid) {
     container.innerHTML = `<div class="recap-list">${cards}</div>`;
   } catch(err) {
     container.innerHTML = `<div class="empty-state"><div class="empty-text" style="color:var(--rose)">Could not load recaps: ${err.message}</div></div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  PRACTICE LOG
+// ══════════════════════════════════════════════════════════════════
+let practiceEntries = [];
+
+// ── View switching ────────────────────────────────────────────────
+function switchView(view) {
+  document.querySelectorAll('.portal-tab').forEach((t,i) =>
+    t.classList.toggle('active', (view === 'recaps' ? i === 0 : i === 1)));
+  document.getElementById('view-recaps').classList.toggle('active', view === 'recaps');
+  document.getElementById('view-practice').classList.toggle('active', view === 'practice');
+}
+
+// ── Local date helpers (avoid UTC drift) ──────────────────────────
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function dateStrOffset(days) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ── Load practice entries ─────────────────────────────────────────
+async function loadPractice(uid) {
+  const container = document.getElementById('practice-container');
+  try {
+    const snap = await db.collection('practice')
+      .where('studentUid', '==', uid)
+      .orderBy('date', 'desc')
+      .get();
+
+    practiceEntries = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderStats();
+    renderActivityChart();
+    renderPracticeList();
+  } catch(err) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-text" style="color:var(--rose)">Could not load practice log: ${err.message}</div></div>`;
+  }
+}
+
+// ── Stats: streak, this week, total ───────────────────────────────
+function renderStats() {
+  // Unique practice days
+  const days = new Set(practiceEntries.map(e => e.date));
+
+  // Current streak — count back from today (or yesterday if today not logged)
+  let streak = 0;
+  let cursor = days.has(todayStr()) ? 0 : (days.has(dateStrOffset(-1)) ? -1 : null);
+  if (cursor !== null) {
+    while (days.has(dateStrOffset(cursor))) { streak++; cursor--; }
+  }
+
+  // This week's minutes — last 7 days inclusive
+  const weekAgo = dateStrOffset(-6);
+  const weekMinutes = practiceEntries
+    .filter(e => e.date >= weekAgo)
+    .reduce((sum, e) => sum + (Number(e.minutes) || 0), 0);
+  const weekLabel = weekMinutes >= 60
+    ? `${Math.floor(weekMinutes/60)}h ${weekMinutes % 60}m`
+    : `${weekMinutes}m`;
+
+  const el = document.getElementById('practice-stats');
+  el.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--gold)">${streak}${streak > 0 ? ' 🔥' : ''}</div>
+      <div class="stat-label">Day Streak</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--teal)">${weekLabel}</div>
+      <div class="stat-label">This Week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--lavender)">${practiceEntries.length}</div>
+      <div class="stat-label">Total Sessions</div>
+    </div>`;
+}
+
+// ── Activity chart: last 14 days ──────────────────────────────────
+function renderActivityChart() {
+  // Sum minutes per day
+  const byDay = {};
+  practiceEntries.forEach(e => {
+    byDay[e.date] = (byDay[e.date] || 0) + (Number(e.minutes) || 0);
+  });
+
+  const cols = [];
+  for (let i = -13; i <= 0; i++) {
+    const ds = dateStrOffset(i);
+    cols.push({ date: ds, minutes: byDay[ds] || 0, d: new Date(ds + 'T12:00:00') });
+  }
+
+  const max = Math.max(60, ...cols.map(c => c.minutes));
+
+  document.getElementById('activity-bars').innerHTML = cols.map(c => {
+    const pct = c.minutes > 0 ? Math.max(6, (c.minutes / max) * 100) : 0;
+    const label = c.d.toLocaleDateString('en-US', { weekday: 'narrow' });
+    return `<div class="abar-col">
+      <div class="abar ${c.minutes === 0 ? 'zero' : ''}"
+           style="height:${c.minutes === 0 ? 3 : pct}%"
+           title="${c.date} — ${c.minutes} min"></div>
+      <div class="abar-day">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Entry list ────────────────────────────────────────────────────
+function renderPracticeList() {
+  const container = document.getElementById('practice-container');
+
+  if (!practiceEntries.length) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding:40px 20px">
+        <div class="empty-icon">📓</div>
+        <div class="empty-title">No practice logged yet</div>
+        <div class="empty-text">Log your first session above.<br>Calvin can see your practice log too — it helps him tailor your lessons.</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="log-list">${practiceEntries.map(e => {
+    const d = new Date(e.date + 'T12:00:00');
+    const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+    const day = d.getDate();
+    const mins = Number(e.minutes) || 0;
+    const minLabel = mins >= 60 ? `${Math.floor(mins/60)}h ${mins % 60}m` : `${mins} min`;
+    return `
+      <div class="log-entry">
+        <div class="log-date">
+          <div class="log-month">${month}</div>
+          <div class="log-day">${day}</div>
+        </div>
+        <div class="log-body">
+          <div class="log-minutes">⏱ ${minLabel}</div>
+          <div class="log-notes">${esc(e.notes)}</div>
+        </div>
+        <button class="btn-del-log" onclick="deletePractice('${e.id}')" title="Delete entry">✕</button>
+      </div>`;
+  }).join('')}</div>`;
+}
+
+// ── Add entry ─────────────────────────────────────────────────────
+async function handleAddPractice(e) {
+  e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const date    = document.getElementById('pl-date').value;
+  const minutes = parseInt(document.getElementById('pl-minutes').value, 10);
+  const notes   = document.getElementById('pl-notes').value.trim();
+  const errEl   = document.getElementById('pl-error');
+  const btn     = document.getElementById('pl-btn');
+
+  errEl.textContent = '';
+  if (!date || !minutes || !notes) { errEl.textContent = 'Please fill in all fields.'; return; }
+  if (date > todayStr()) { errEl.textContent = "You can't log practice for a future date."; return; }
+
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    await db.collection('practice').add({
+      studentUid: user.uid,
+      date, minutes, notes,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('pl-notes').value = '';
+    document.getElementById('pl-minutes').value = '';
+    document.getElementById('pl-date').value = todayStr();
+    await loadPractice(user.uid);
+  } catch(err) {
+    errEl.textContent = 'Could not save: ' + err.message;
+  }
+  btn.textContent = 'Log Practice Session'; btn.disabled = false;
+}
+
+// ── Delete entry ──────────────────────────────────────────────────
+async function deletePractice(id) {
+  if (!confirm('Delete this practice entry?')) return;
+  try {
+    await db.collection('practice').doc(id).delete();
+    await loadPractice(auth.currentUser.uid);
+  } catch(err) {
+    alert('Could not delete: ' + err.message);
   }
 }
 

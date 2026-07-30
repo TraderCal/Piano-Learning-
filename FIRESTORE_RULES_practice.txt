@@ -1,0 +1,67 @@
+PRACTICE LOG — FIRESTORE SETUP
+================================
+
+Two things need to be added in the Firebase Console before the practice log works.
+
+
+─────────────────────────────────────────────
+1. COMPOSITE INDEX  (required — query will fail without it)
+─────────────────────────────────────────────
+
+The practice log queries by studentUid AND sorts by date, which Firestore
+needs an index for.
+
+EASIEST WAY: Just open the portal, click the "Practice Log" tab, and open
+your browser console (Cmd+Option+J). Firebase prints an error with a direct
+link — click it, then click "Create Index." Takes ~1 minute to build.
+
+MANUAL WAY: Firebase Console → Firestore Database → Indexes → Create Index
+  Collection ID:  practice
+  Field 1:        studentUid    Ascending
+  Field 2:        date          Descending
+  Query scope:    Collection
+
+
+─────────────────────────────────────────────
+2. SECURITY RULES
+─────────────────────────────────────────────
+
+Firebase Console → Firestore Database → Rules
+
+Add the `practice` block below to your existing rules. Replace
+YOUR_TEACHER_UID with your own Firebase Auth UID (find it under
+Authentication → Users → your account → User UID).
+
+    match /practice/{entryId} {
+      // Students read + write only their own entries
+      allow read: if request.auth != null
+                  && (resource.data.studentUid == request.auth.uid
+                      || request.auth.uid == 'YOUR_TEACHER_UID');
+
+      allow create: if request.auth != null
+                    && request.resource.data.studentUid == request.auth.uid;
+
+      allow delete: if request.auth != null
+                    && resource.data.studentUid == request.auth.uid;
+
+      // Nobody edits entries after the fact — keeps the log honest
+      allow update: if false;
+    }
+
+WHAT THIS DOES:
+  • A student can only see and log their own practice
+  • You (teacher UID) can read every student's log
+  • Entries can't be edited after creation, only deleted by their owner
+  • Nobody can write an entry under someone else's name
+
+
+─────────────────────────────────────────────
+DATA SHAPE
+─────────────────────────────────────────────
+
+Collection: practice
+  studentUid  string     Firebase Auth UID of the student
+  date        string     "YYYY-MM-DD" (local date, no timezone drift)
+  minutes     number     1–600
+  notes       string     what they worked on
+  createdAt   timestamp  server timestamp

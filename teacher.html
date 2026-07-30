@@ -209,6 +209,63 @@
       animation: spin 0.75s linear infinite; margin: 50px auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── Student panel tabs ────────────────────────── */
+    .panel-tabs {
+      display: flex; gap: 4px; margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-tab {
+      padding: 9px 18px; font-size: 13px; font-weight: 500;
+      color: var(--text-dim); cursor: pointer; background: none;
+      border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -1px; transition: all 0.18s;
+      font-family: 'Outfit', sans-serif;
+    }
+    .panel-tab:hover { color: var(--text); }
+    .panel-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .panel-view { display: none; }
+    .panel-view.active { display: block; }
+
+    /* ── Practice log (teacher view) ───────────────── */
+    .pl-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+    .pl-stat {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 11px; padding: 14px 12px; text-align: center;
+    }
+    .pl-stat-val { font-size: 22px; font-weight: 600; line-height: 1.15; margin-bottom: 3px; }
+    .pl-stat-lbl { font-size: 9px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.09em; text-transform: uppercase; }
+    @media (max-width: 700px) { .pl-stats { grid-template-columns: repeat(2, 1fr); } }
+
+    .pl-chart-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 11px; padding: 16px 16px 12px; margin-bottom: 22px;
+    }
+    .pl-chart-title { font-size: 10px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+    .pl-bars { display: flex; align-items: flex-end; gap: 4px; height: 70px; }
+    .pl-bcol { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
+    .pl-bar {
+      width: 100%; border-radius: 3px 3px 0 0; min-height: 3px;
+      background: linear-gradient(180deg, var(--teal), rgba(94,234,212,0.3));
+    }
+    .pl-bar.zero { background: var(--surface); border: 1px solid var(--border); }
+    .pl-bday { font-size: 8px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+
+    .pl-entry {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 13px 16px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 11px; margin-bottom: 9px;
+    }
+    .pl-e-date {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 7px; padding: 6px 9px; text-align: center;
+      min-width: 46px; flex-shrink: 0;
+    }
+    .pl-e-month { font-size: 9px; font-weight: 700; color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase; }
+    .pl-e-day { font-size: 18px; font-weight: 600; color: var(--text); line-height: 1.1; }
+    .pl-e-body { flex: 1; min-width: 0; padding-top: 2px; }
+    .pl-e-mins { font-size: 11px; font-weight: 600; color: var(--gold); margin-bottom: 4px; font-family: 'DM Mono', monospace; }
+    .pl-e-notes { font-size: 13px; font-weight: 300; color: var(--text-dim); line-height: 1.6; white-space: pre-wrap; }
+
     /* ── Modal overlay ─────────────────────────────── */
     .modal-overlay {
       display: none; position: fixed; inset: 0; z-index: 100;
@@ -543,9 +600,138 @@ async function selectStudent(uid, name, email) {
       </div>
       <button class="btn-new-recap" onclick="openAddRecap()">＋ New Recap</button>
     </div>
-    <div id="recaps-list"><div class="spinner"></div></div>`;
+
+    <div class="panel-tabs">
+      <button class="panel-tab active" onclick="switchPanel('recaps')">Lesson Recaps</button>
+      <button class="panel-tab" onclick="switchPanel('practice')">Practice Log</button>
+    </div>
+
+    <div class="panel-view active" id="panel-recaps">
+      <div id="recaps-list"><div class="spinner"></div></div>
+    </div>
+
+    <div class="panel-view" id="panel-practice">
+      <div id="practice-panel"><div class="spinner"></div></div>
+    </div>`;
 
   loadRecapsForStudent(uid);
+  loadPracticeForStudent(uid);
+}
+
+// ── Panel tab switching ────────────────────────────────────────────
+function switchPanel(view) {
+  document.querySelectorAll('.panel-tab').forEach((t,i) =>
+    t.classList.toggle('active', (view === 'recaps' ? i === 0 : i === 1)));
+  document.getElementById('panel-recaps').classList.toggle('active', view === 'recaps');
+  document.getElementById('panel-practice').classList.toggle('active', view === 'practice');
+}
+
+// ── Local date helpers ─────────────────────────────────────────────
+function tDateStr(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ── Load student's practice log ────────────────────────────────────
+async function loadPracticeForStudent(uid) {
+  const el = document.getElementById('practice-panel');
+  if (!el) return;
+  try {
+    const snap = await db.collection('practice')
+      .where('studentUid', '==', uid)
+      .orderBy('date', 'desc')
+      .get();
+
+    const entries = snap.docs.map(d => d.data());
+
+    if (!entries.length) {
+      el.innerHTML = `<div style="padding:40px 0;text-align:center;font-size:13px;color:var(--text-dim);opacity:0.6;line-height:1.7;">
+        No practice logged yet.<br>Entries appear here as soon as ${esc(selectedStudentName.split(' ')[0])} logs them in the portal.</div>`;
+      return;
+    }
+
+    // ── Stats ──
+    const days = new Set(entries.map(e => e.date));
+    let streak = 0;
+    let cursor = days.has(tDateStr(0)) ? 0 : (days.has(tDateStr(-1)) ? -1 : null);
+    if (cursor !== null) { while (days.has(tDateStr(cursor))) { streak++; cursor--; } }
+
+    const weekAgo = tDateStr(-6);
+    const weekMins = entries.filter(e => e.date >= weekAgo)
+      .reduce((s,e) => s + (Number(e.minutes)||0), 0);
+    const totalMins = entries.reduce((s,e) => s + (Number(e.minutes)||0), 0);
+    const avgMins = Math.round(totalMins / entries.length);
+    const fmt = m => m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
+
+    // ── Chart: last 14 days ──
+    const byDay = {};
+    entries.forEach(e => { byDay[e.date] = (byDay[e.date]||0) + (Number(e.minutes)||0); });
+    const cols = [];
+    for (let i = -13; i <= 0; i++) {
+      const ds = tDateStr(i);
+      cols.push({ date: ds, minutes: byDay[ds]||0, d: new Date(ds + 'T12:00:00') });
+    }
+    const max = Math.max(60, ...cols.map(c => c.minutes));
+
+    // ── Last practiced ──
+    const lastDate = entries[0].date;
+    const daysAgo = Math.round((new Date(tDateStr(0)+'T12:00:00') - new Date(lastDate+'T12:00:00')) / 86400000);
+    const lastLabel = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo}d ago`;
+
+    el.innerHTML = `
+      <div class="pl-stats">
+        <div class="pl-stat">
+          <div class="pl-stat-val" style="color:var(--gold)">${streak}${streak > 0 ? '🔥' : ''}</div>
+          <div class="pl-stat-lbl">Day Streak</div>
+        </div>
+        <div class="pl-stat">
+          <div class="pl-stat-val" style="color:var(--teal)">${fmt(weekMins)}</div>
+          <div class="pl-stat-lbl">This Week</div>
+        </div>
+        <div class="pl-stat">
+          <div class="pl-stat-val" style="color:var(--lavender)">${avgMins}m</div>
+          <div class="pl-stat-lbl">Avg Session</div>
+        </div>
+        <div class="pl-stat">
+          <div class="pl-stat-val" style="color:${daysAgo > 6 ? 'var(--rose)' : 'var(--text)'};font-size:16px;padding-top:4px;">${lastLabel}</div>
+          <div class="pl-stat-lbl">Last Practiced</div>
+        </div>
+      </div>
+
+      <div class="pl-chart-card">
+        <div class="pl-chart-title">Last 14 Days · ${entries.length} total session${entries.length > 1 ? 's' : ''}</div>
+        <div class="pl-bars">
+          ${cols.map(c => {
+            const pct = c.minutes > 0 ? Math.max(6, (c.minutes/max)*100) : 0;
+            const lbl = c.d.toLocaleDateString('en-US', { weekday:'narrow' });
+            return `<div class="pl-bcol">
+              <div class="pl-bar ${c.minutes===0?'zero':''}" style="height:${c.minutes===0?3:pct}%" title="${c.date} — ${c.minutes} min"></div>
+              <div class="pl-bday">${lbl}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      ${entries.map(e => {
+        const d = new Date(e.date + 'T12:00:00');
+        const month = d.toLocaleString('default',{month:'short'}).toUpperCase();
+        const mins = Number(e.minutes)||0;
+        return `
+          <div class="pl-entry">
+            <div class="pl-e-date">
+              <div class="pl-e-month">${month}</div>
+              <div class="pl-e-day">${d.getDate()}</div>
+            </div>
+            <div class="pl-e-body">
+              <div class="pl-e-mins">⏱ ${fmt(mins)}</div>
+              <div class="pl-e-notes">${esc(e.notes)}</div>
+            </div>
+          </div>`;
+      }).join('')}`;
+  } catch(err) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--rose);padding:20px 0;">Error loading practice log: ${err.message}</div>`;
+  }
 }
 
 // ── Load recaps for student ────────────────────────────────────────
