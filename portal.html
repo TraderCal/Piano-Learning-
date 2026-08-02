@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Lessons — Piano408 Studios</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -11,291 +12,447 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
     :root {
-      --bg:       #0a0b10;
-      --surface:  #13141c;
-      --surface2: #1a1b26;
-      --border:   #2a2d42;
-      --text:     #e8e9f0;
-      --text-dim: #7a7d9a;
-      --gold:     #e8c87a;
-      --teal:     #5eead4;
-      --lavender: #a78bfa;
-      --rose:     #fb7185;
+      --bg:        #07080d;
+      --surface:   rgba(255,255,255,0.038);
+      --surface2:  rgba(255,255,255,0.065);
+      --border:    rgba(255,255,255,0.085);
+      --border2:   rgba(255,255,255,0.16);
+      --text:      #f2f3f9;
+      --text-dim:  #8f93ac;
+      --text-mute: #5f6379;
+      --gold:      #f0c674;
+      --teal:      #5eead4;
+      --violet:    #a78bfa;
+      --lavender:  #a78bfa;
+      --rose:      #fb7185;
+      --radius:    18px;
+      --ease:      cubic-bezier(0.4, 0, 0.2, 1);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; }
 
-    /* ── Auth screen ─────────────────────────────── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── Aurora backdrop ─────────────────────────── */
+    body::before {
+      content: ''; position: fixed; inset: -20%; z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 55% 45% at 12% 4%,  rgba(167,139,250,0.16), transparent 62%),
+        radial-gradient(ellipse 50% 40% at 88% 12%, rgba(94,234,212,0.12),  transparent 62%),
+        radial-gradient(ellipse 60% 45% at 50% 98%, rgba(240,198,116,0.09), transparent 66%);
+      animation: aurora 26s var(--ease) infinite alternate;
+    }
+    @keyframes aurora {
+      0%   { transform: translate(0,0) scale(1); }
+      50%  { transform: translate(2.5%,-2%) scale(1.06); }
+      100% { transform: translate(-2%,2.5%) scale(1.03); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body::before { animation: none; }
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 9px; height: 9px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 99px; border: 2px solid transparent; background-clip: content-box; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); background-clip: content-box; }
+
+    /* entrance */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    @keyframes popIn  { from { opacity: 0; transform: scale(0.94); }      to { opacity: 1; transform: none; } }
+
+    /* ════════════════════════════════════════════
+       AUTH SCREEN
+    ════════════════════════════════════════════ */
     #auth-screen {
+      position: relative; z-index: 1;
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
       padding: 24px;
-      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(232,200,122,0.06) 0%, transparent 70%);
     }
     .auth-card {
-      background: var(--surface);
+      position: relative;
+      background: linear-gradient(160deg, rgba(255,255,255,0.055), rgba(255,255,255,0.022));
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
       border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 40px 36px 36px;
-      width: 100%; max-width: 390px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      border-radius: 24px;
+      padding: 42px 38px 34px;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07);
+      animation: popIn 0.6s var(--ease) both;
+    }
+    .auth-card::before {
+      content: ''; position: absolute; top: 0; left: 22%; right: 22%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.75;
+    }
+    .auth-badge {
+      width: 46px; height: 46px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 18px;
+      background: linear-gradient(140deg, rgba(240,198,116,0.22), rgba(167,139,250,0.18));
+      border: 1px solid rgba(240,198,116,0.28);
+      box-shadow: 0 6px 22px rgba(240,198,116,0.13);
     }
     .auth-logo {
       font-family: 'DM Serif Display', serif;
-      font-size: 20px; color: var(--gold);
-      margin-bottom: 2px; letter-spacing: 0.01em;
+      font-size: 25px; line-height: 1.2; margin-bottom: 5px;
+      background: linear-gradient(100deg, #fff 12%, var(--gold) 92%);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: var(--gold);
     }
-    .auth-subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 28px; font-weight: 300; }
+    .auth-subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 30px; font-weight: 300; line-height: 1.55; }
 
-    /* tabs */
-    .auth-tabs { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+    .auth-tabs {
+      display: flex; gap: 4px; margin-bottom: 26px; padding: 4px;
+      background: rgba(0,0,0,0.28); border: 1px solid var(--border);
+      border-radius: 12px;
+    }
     .auth-tab {
       flex: 1; padding: 9px 0; text-align: center;
       font-size: 13px; font-weight: 500; color: var(--text-dim);
-      cursor: pointer; border-bottom: 2px solid transparent;
-      transition: all 0.2s; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none;
+      cursor: pointer; border: none; background: none; border-radius: 9px;
+      transition: all 0.22s var(--ease);
       font-family: 'Outfit', sans-serif;
     }
-    .auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .auth-tab:hover { color: var(--text); }
+    .auth-tab.active {
+      color: #0a0b10; font-weight: 600;
+      background: linear-gradient(135deg, var(--gold), #e0b45f);
+      box-shadow: 0 3px 14px rgba(240,198,116,0.28);
+    }
 
     .auth-panel { display: none; }
-    .auth-panel.active { display: block; }
+    .auth-panel.active { display: block; animation: fadeUp 0.4s var(--ease) both; }
 
+    /* fields */
     .field { margin-bottom: 16px; }
     .field label {
-      display: block; font-size: 11px; font-weight: 600;
-      color: var(--text-dim); margin-bottom: 6px;
-      letter-spacing: 0.08em; text-transform: uppercase;
+      display: block; font-size: 10px; font-weight: 600;
+      color: var(--text-mute); margin-bottom: 7px;
+      letter-spacing: 0.11em; text-transform: uppercase;
     }
-    .field input {
-      width: 100%; padding: 11px 14px;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 9px; color: var(--text); font-size: 14px;
+    .field input, .log-form textarea {
+      width: 100%; padding: 12px 15px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 11px; color: var(--text); font-size: 14px;
       font-family: 'Outfit', sans-serif; outline: none;
-      transition: border-color 0.18s;
+      transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.2s;
     }
-    .field input:focus { border-color: var(--gold); }
+    .field input::placeholder, .log-form textarea::placeholder { color: var(--text-mute); }
+    .field input:focus, .log-form textarea:focus {
+      border-color: rgba(240,198,116,0.55);
+      box-shadow: 0 0 0 3px rgba(240,198,116,0.11);
+      background: rgba(0,0,0,0.42);
+    }
+    .field input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.65); cursor: pointer; }
+
     .btn-auth {
-      width: 100%; padding: 12px; margin-top: 4px;
-      background: var(--gold); color: #0a0b10;
-      border: none; border-radius: 9px;
+      width: 100%; padding: 13px; margin-top: 6px;
+      background: linear-gradient(135deg, var(--gold), #e3b45c);
+      color: #0a0b10; border: none; border-radius: 11px;
       font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif;
-      cursor: pointer; transition: opacity 0.18s;
+      cursor: pointer; transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), opacity 0.18s;
+      box-shadow: 0 6px 20px rgba(240,198,116,0.22);
     }
-    .btn-auth:hover { opacity: 0.88; }
-    .btn-auth:disabled { opacity: 0.55; cursor: default; }
-    .auth-error { font-size: 12px; color: var(--rose); margin-top: 10px; min-height: 18px; text-align: center; }
-    .auth-hint { font-size: 12px; color: var(--text-dim); margin-top: 14px; text-align: center; }
-    .auth-hint a { color: var(--text-dim); text-decoration: underline; cursor: pointer; }
-    .auth-hint a:hover { color: var(--gold); }
+    .btn-auth:hover:not(:disabled) { transform: translateY(-1.5px); box-shadow: 0 10px 28px rgba(240,198,116,0.32); }
+    .btn-auth:active:not(:disabled) { transform: translateY(0); }
+    .btn-auth:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
 
-    /* ── Portal screen ───────────────────────────── */
-    #portal-screen { display: none; }
+    .auth-error { font-size: 12px; color: var(--rose); margin-top: 11px; min-height: 18px; text-align: center; line-height: 1.5; }
+    .auth-hint { font-size: 12px; color: var(--text-mute); margin-top: 16px; text-align: center; line-height: 1.6; }
+    .auth-hint a { color: var(--text-dim); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); cursor: pointer; transition: color 0.18s, border-color 0.18s; }
+    .auth-hint a:hover { color: var(--gold); border-bottom-color: rgba(240,198,116,0.5); }
+
+    /* ════════════════════════════════════════════
+       PORTAL
+    ════════════════════════════════════════════ */
+    #portal-screen { display: none; position: relative; z-index: 1; }
+
     .portal-header {
-      background: var(--surface);
+      background: rgba(10,11,16,0.72);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
-      padding: 14px 28px;
+      padding: 13px 26px;
       display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 10;
+      position: sticky; top: 0; z-index: 20;
     }
-    .portal-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--gold); }
-    .portal-right { display: flex; align-items: center; gap: 14px; }
-    .portal-email { font-size: 12px; color: var(--text-dim); }
+    .portal-brand { display: flex; align-items: center; gap: 11px; }
+    .portal-mark {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 15px;
+      background: linear-gradient(140deg, rgba(240,198,116,0.24), rgba(167,139,250,0.2));
+      border: 1px solid rgba(240,198,116,0.26);
+    }
+    .portal-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--gold); letter-spacing: 0.01em; }
+    .portal-right { display: flex; align-items: center; gap: 12px; }
+    .portal-email { font-size: 12px; color: var(--text-mute); }
+    .portal-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: #0a0b10;
+      background: linear-gradient(135deg, var(--teal), var(--violet));
+      box-shadow: 0 3px 12px rgba(94,234,212,0.24);
+      flex-shrink: 0; letter-spacing: 0.02em;
+    }
     .btn-signout {
-      font-size: 12px; padding: 5px 14px;
+      font-size: 12px; padding: 6px 15px;
       border: 1px solid var(--border); border-radius: 20px;
-      background: none; color: var(--text-dim); cursor: pointer;
-      font-family: 'Outfit', sans-serif; transition: all 0.18s;
+      background: rgba(255,255,255,0.03); color: var(--text-dim); cursor: pointer;
+      font-family: 'Outfit', sans-serif; transition: all 0.2s var(--ease);
     }
-    .btn-signout:hover { border-color: var(--rose); color: var(--rose); }
+    .btn-signout:hover { border-color: rgba(251,113,133,0.5); color: var(--rose); background: rgba(251,113,133,0.07); }
+    @media (max-width: 560px) {
+      .portal-header { padding: 12px 16px; }
+      .portal-email { display: none; }
+    }
 
-    .portal-body { max-width: 740px; margin: 0 auto; padding: 44px 24px 60px; }
+    .portal-body { max-width: 780px; margin: 0 auto; padding: 46px 24px 70px; }
     .portal-greeting {
       font-family: 'DM Serif Display', serif;
-      font-size: 28px; color: var(--text); margin-bottom: 4px;
+      font-size: 34px; line-height: 1.22; margin-bottom: 6px;
+      background: linear-gradient(100deg, #ffffff 20%, #c9c4e8 70%, var(--gold) 100%);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: var(--text);
+      animation: fadeUp 0.55s var(--ease) both;
     }
-    .portal-tagline { font-size: 13px; font-weight: 300; color: var(--text-dim); margin-bottom: 40px; }
+    .portal-tagline {
+      font-size: 13.5px; font-weight: 300; color: var(--text-dim); margin-bottom: 34px;
+      animation: fadeUp 0.55s 0.06s var(--ease) both;
+    }
+    @media (max-width: 560px) { .portal-greeting { font-size: 27px; } .portal-body { padding: 34px 18px 60px; } }
 
-    /* recap list */
-    .recap-list { display: flex; flex-direction: column; gap: 22px; }
-    .recap-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px; overflow: hidden;
-      transition: border-color 0.2s;
+    /* ── Main tabs ───────────────────────────────── */
+    .portal-tabs {
+      display: inline-flex; gap: 4px; margin-bottom: 30px; padding: 5px;
+      background: rgba(255,255,255,0.035); border: 1px solid var(--border);
+      border-radius: 14px;
+      animation: fadeUp 0.55s 0.1s var(--ease) both;
     }
-    .recap-card:hover { border-color: rgba(232,200,122,0.25); }
+    .portal-tab {
+      padding: 9px 22px; font-size: 13px; font-weight: 500;
+      color: var(--text-dim); cursor: pointer; background: none;
+      border: none; border-radius: 10px;
+      transition: all 0.24s var(--ease);
+      font-family: 'Outfit', sans-serif; white-space: nowrap;
+    }
+    .portal-tab:hover { color: var(--text); }
+    .portal-tab.active {
+      color: #0a0b10; font-weight: 600;
+      background: linear-gradient(135deg, var(--gold), #e2b55f);
+      box-shadow: 0 4px 16px rgba(240,198,116,0.26);
+    }
+    .portal-view { display: none; }
+    .portal-view.active { display: block; animation: fadeUp 0.45s var(--ease) both; }
+    @media (max-width: 480px) { .portal-tabs { display: flex; width: 100%; } .portal-tab { flex: 1; padding: 9px 10px; } }
+
+    /* ── Stat cards ──────────────────────────────── */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-bottom: 24px; }
+    .stat-card {
+      position: relative; overflow: hidden;
+      background: linear-gradient(155deg, rgba(255,255,255,0.055), rgba(255,255,255,0.022));
+      border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 18px;
+      transition: transform 0.28s var(--ease), border-color 0.28s, box-shadow 0.28s;
+      animation: fadeUp 0.5s var(--ease) both;
+    }
+    .stat-card:nth-child(1) { animation-delay: 0.04s; }
+    .stat-card:nth-child(2) { animation-delay: 0.09s; }
+    .stat-card:nth-child(3) { animation-delay: 0.14s; }
+    .stat-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--sc, var(--gold)); opacity: 0.65;
+    }
+    .stat-card:hover { transform: translateY(-3px); border-color: var(--border2); box-shadow: 0 14px 34px rgba(0,0,0,0.32); }
+    .stat-icon { font-size: 17px; margin-bottom: 11px; opacity: 0.9; line-height: 1; }
+    .stat-value {
+      font-size: 31px; font-weight: 600; line-height: 1.05;
+      margin-bottom: 6px; color: var(--sc, var(--text));
+      letter-spacing: -0.02em;
+    }
+    .stat-label { font-size: 10px; font-weight: 600; color: var(--text-mute); letter-spacing: 0.11em; text-transform: uppercase; }
+    .sc-gold   { --sc: var(--gold); }
+    .sc-teal   { --sc: var(--teal); }
+    .sc-violet { --sc: var(--violet); }
+    @media (max-width: 560px) {
+      .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+      .stat-card { display: flex; align-items: center; gap: 15px; padding: 15px 18px; }
+      .stat-icon { margin-bottom: 0; font-size: 20px; }
+      .stat-value { font-size: 24px; margin-bottom: 1px; }
+    }
+
+    /* ── Activity chart ──────────────────────────── */
+    .activity-card {
+      background: linear-gradient(155deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px 22px 17px; margin-bottom: 24px;
+      animation: fadeUp 0.5s 0.18s var(--ease) both;
+    }
+    .activity-title {
+      font-size: 10px; font-weight: 600; color: var(--text-mute);
+      letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 20px;
+    }
+    .activity-bars { display: flex; align-items: flex-end; gap: 6px; height: 96px; }
+    .abar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end; }
+    .abar {
+      width: 100%; border-radius: 5px 5px 2px 2px; min-height: 4px;
+      background: linear-gradient(180deg, var(--teal) 0%, rgba(94,234,212,0.28) 100%);
+      box-shadow: 0 0 14px rgba(94,234,212,0.28);
+      transition: filter 0.2s var(--ease), transform 0.2s var(--ease);
+      transform-origin: bottom;
+      animation: barGrow 0.6s var(--ease) both;
+    }
+    @keyframes barGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+    .abar:hover { filter: brightness(1.25); }
+    .abar.zero { background: rgba(255,255,255,0.055); box-shadow: none; }
+    .abar.today { background: linear-gradient(180deg, var(--gold) 0%, rgba(240,198,116,0.3) 100%); box-shadow: 0 0 18px rgba(240,198,116,0.4); }
+    .abar-day { font-size: 9px; color: var(--text-mute); font-family: 'DM Mono', monospace; }
+
+    /* ── Practice form ───────────────────────────── */
+    .log-form {
+      background: linear-gradient(155deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; margin-bottom: 30px;
+      animation: fadeUp 0.5s 0.24s var(--ease) both;
+    }
+    .log-form-row { display: flex; gap: 13px; margin-bottom: 14px; }
+    .log-form-row .field { flex: 1; margin-bottom: 0; }
+    .log-form textarea { resize: vertical; min-height: 82px; line-height: 1.6; }
+    .btn-log {
+      width: 100%; padding: 12.5px; margin-top: 15px;
+      background: linear-gradient(135deg, var(--teal), #48c9b4);
+      color: #06231f; border: none; border-radius: 11px;
+      font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif;
+      cursor: pointer; box-shadow: 0 6px 20px rgba(94,234,212,0.2);
+      transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), opacity 0.18s;
+    }
+    .btn-log:hover:not(:disabled) { transform: translateY(-1.5px); box-shadow: 0 10px 28px rgba(94,234,212,0.3); }
+    .btn-log:active:not(:disabled) { transform: translateY(0); }
+    .btn-log:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
+    @media (max-width: 560px) { .log-form-row { flex-direction: column; gap: 14px; } }
+
+    /* ── Practice entries ────────────────────────── */
+    .log-list { display: flex; flex-direction: column; gap: 11px; }
+    .log-entry {
+      position: relative; overflow: hidden;
+      background: linear-gradient(155deg, rgba(255,255,255,0.048), rgba(255,255,255,0.018));
+      border: 1px solid var(--border);
+      border-radius: 15px; padding: 16px 19px;
+      display: flex; align-items: flex-start; gap: 16px;
+      transition: transform 0.25s var(--ease), border-color 0.25s, box-shadow 0.25s;
+      animation: fadeUp 0.45s var(--ease) both;
+    }
+    .log-entry::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+      background: linear-gradient(180deg, var(--teal), transparent);
+      opacity: 0; transition: opacity 0.25s var(--ease);
+    }
+    .log-entry:hover { transform: translateX(3px); border-color: rgba(94,234,212,0.28); box-shadow: 0 10px 28px rgba(0,0,0,0.28); }
+    .log-entry:hover::before { opacity: 1; }
+    .log-date {
+      background: rgba(0,0,0,0.32); border: 1px solid var(--border);
+      border-radius: 11px; padding: 8px 11px; text-align: center;
+      min-width: 52px; flex-shrink: 0;
+    }
+    .log-month { font-size: 9px; font-weight: 700; color: var(--teal); letter-spacing: 0.11em; text-transform: uppercase; }
+    .log-day { font-size: 21px; font-weight: 600; color: var(--text); line-height: 1.12; letter-spacing: -0.02em; }
+    .log-body { flex: 1; min-width: 0; padding-top: 2px; }
+    .log-minutes {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; color: var(--gold);
+      background: rgba(240,198,116,0.1); border: 1px solid rgba(240,198,116,0.2);
+      padding: 3px 10px; border-radius: 20px; margin-bottom: 9px;
+      font-family: 'DM Mono', monospace;
+    }
+    .log-notes { font-size: 13.5px; font-weight: 300; color: var(--text-dim); line-height: 1.7; white-space: pre-wrap; }
+    .btn-del-log {
+      background: none; border: none; color: var(--text-mute);
+      font-size: 15px; cursor: pointer; opacity: 0; padding: 3px 7px;
+      transition: all 0.2s var(--ease); flex-shrink: 0;
+      font-family: 'Outfit', sans-serif; line-height: 1; border-radius: 6px;
+    }
+    .log-entry:hover .btn-del-log { opacity: 0.5; }
+    .btn-del-log:hover { opacity: 1 !important; color: var(--rose); background: rgba(251,113,133,0.1); }
+    @media (hover: none) { .btn-del-log { opacity: 0.4; } }
+
+    /* ── Recap cards ─────────────────────────────── */
+    .recap-list { display: flex; flex-direction: column; gap: 20px; }
+    .recap-card {
+      background: linear-gradient(155deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      transition: transform 0.28s var(--ease), border-color 0.28s, box-shadow 0.28s;
+      animation: fadeUp 0.5s var(--ease) both;
+    }
+    .recap-card:hover { transform: translateY(-2px); border-color: rgba(240,198,116,0.28); box-shadow: 0 16px 40px rgba(0,0,0,0.34); }
     .recap-card-header {
-      padding: 18px 22px 16px;
+      padding: 19px 22px 17px;
       display: flex; align-items: flex-start; gap: 16px;
       border-bottom: 1px solid var(--border);
     }
     .date-badge {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 9px; padding: 8px 12px;
-      text-align: center; min-width: 54px; flex-shrink: 0;
+      background: linear-gradient(150deg, rgba(94,234,212,0.14), rgba(167,139,250,0.1));
+      border: 1px solid rgba(94,234,212,0.24);
+      border-radius: 12px; padding: 9px 13px;
+      text-align: center; min-width: 56px; flex-shrink: 0;
     }
     .date-month { font-size: 10px; font-weight: 700; color: var(--teal); letter-spacing: 0.12em; text-transform: uppercase; }
-    .date-day   { font-size: 24px; font-weight: 600; color: var(--text); line-height: 1.1; }
-    .recap-meta { flex: 1; padding-top: 2px; }
-    .recap-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .date-day   { font-size: 25px; font-weight: 600; color: var(--text); line-height: 1.1; letter-spacing: -0.02em; }
+    .recap-meta { flex: 1; padding-top: 3px; min-width: 0; }
+    .recap-title { font-size: 16.5px; font-weight: 600; color: var(--text); margin-bottom: 6px; line-height: 1.35; }
     .recap-num {
-      font-family: 'DM Mono', monospace; font-size: 10px;
+      display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px;
       color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase;
+      background: rgba(240,198,116,0.1); border: 1px solid rgba(240,198,116,0.2);
+      padding: 3px 9px; border-radius: 20px;
     }
-    .recap-body { padding: 20px 22px; }
-    .recap-notes {
-      font-size: 14px; font-weight: 300; color: var(--text-dim);
-      line-height: 1.8; margin-bottom: 20px; white-space: pre-wrap;
-    }
+    .recap-body { padding: 21px 22px; }
+    .recap-notes { font-size: 14px; font-weight: 300; color: var(--text-dim); line-height: 1.85; margin-bottom: 20px; white-space: pre-wrap; }
     .recap-video {
-      border-radius: 10px; overflow: hidden;
-      background: #000; margin-bottom: 18px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      border-radius: 13px; overflow: hidden; background: #000; margin-bottom: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5); border: 1px solid var(--border);
     }
     .recap-video video { width: 100%; display: block; max-height: 400px; object-fit: contain; }
-    .recap-files { display: flex; flex-wrap: wrap; gap: 8px; }
+    .recap-files { display: flex; flex-wrap: wrap; gap: 9px; }
     .file-chip {
       display: inline-flex; align-items: center; gap: 7px;
-      padding: 7px 16px; border-radius: 20px;
-      border: 1px solid var(--border); background: var(--surface2);
-      font-size: 12px; color: var(--text-dim); cursor: pointer;
-      text-decoration: none; transition: all 0.18s; font-family: 'Outfit', sans-serif;
+      padding: 8px 17px; border-radius: 20px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.045);
+      font-size: 12.5px; color: var(--text-dim); cursor: pointer;
+      text-decoration: none; font-family: 'Outfit', sans-serif;
+      transition: all 0.22s var(--ease);
     }
-    .file-chip:hover { border-color: var(--lavender); color: var(--lavender); background: rgba(167,139,250,0.07); }
-
-    /* ── Portal tabs ─────────────────────────────── */
-    .portal-tabs {
-      display: flex; gap: 4px; margin-bottom: 32px;
-      border-bottom: 1px solid var(--border);
-    }
-    .portal-tab {
-      padding: 10px 20px; font-size: 13px; font-weight: 500;
-      color: var(--text-dim); cursor: pointer; background: none;
-      border: none; border-bottom: 2px solid transparent;
-      margin-bottom: -1px; transition: all 0.18s;
-      font-family: 'Outfit', sans-serif;
-    }
-    .portal-tab:hover { color: var(--text); }
-    .portal-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-    .portal-view { display: none; }
-    .portal-view.active { display: block; }
-
-    /* ── Practice stats ──────────────────────────── */
-    .stats-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 12px; margin-bottom: 26px;
-    }
-    .stat-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 13px; padding: 18px 16px; text-align: center;
-    }
-    .stat-value {
-      font-size: 30px; font-weight: 600; line-height: 1.1;
-      margin-bottom: 4px; font-family: 'Outfit', sans-serif;
-    }
-    .stat-label {
-      font-size: 10px; font-weight: 600; color: var(--text-dim);
-      letter-spacing: 0.1em; text-transform: uppercase;
-    }
-    @media (max-width: 520px) {
-      .stats-grid { grid-template-columns: 1fr; gap: 10px; }
-      .stat-card { display: flex; align-items: center; justify-content: space-between; text-align: left; padding: 14px 18px; }
-      .stat-value { font-size: 24px; margin-bottom: 0; }
+    .file-chip:hover {
+      border-color: rgba(167,139,250,0.5); color: var(--violet);
+      background: rgba(167,139,250,0.11); transform: translateY(-1.5px);
+      box-shadow: 0 6px 18px rgba(167,139,250,0.16);
     }
 
-    /* activity chart */
-    .activity-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 13px; padding: 20px 20px 16px; margin-bottom: 26px;
+    /* ── Empty / loading ─────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 62px 24px;
+      background: linear-gradient(155deg, rgba(255,255,255,0.035), rgba(255,255,255,0.014));
+      border: 1px dashed var(--border); border-radius: var(--radius);
+      animation: fadeUp 0.5s var(--ease) both;
     }
-    .activity-title {
-      font-size: 11px; font-weight: 600; color: var(--text-dim);
-      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 18px;
-    }
-    .activity-bars {
-      display: flex; align-items: flex-end; gap: 5px; height: 90px;
-    }
-    .abar-col {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; gap: 6px; height: 100%;
-      justify-content: flex-end;
-    }
-    .abar {
-      width: 100%; border-radius: 4px 4px 0 0; min-height: 3px;
-      background: linear-gradient(180deg, var(--teal), rgba(94,234,212,0.35));
-      transition: opacity 0.18s; position: relative;
-    }
-    .abar.zero { background: var(--surface2); border: 1px solid var(--border); }
-    .abar-day {
-      font-size: 9px; color: var(--text-dim); font-family: 'DM Mono', monospace;
-    }
-
-    /* practice entry form */
-    .log-form {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 13px; padding: 20px; margin-bottom: 26px;
-    }
-    .log-form-row { display: flex; gap: 12px; margin-bottom: 12px; }
-    .log-form-row .field { flex: 1; margin-bottom: 0; }
-    .log-form textarea {
-      width: 100%; padding: 11px 14px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 9px;
-      color: var(--text); font-size: 14px; font-family: 'Outfit', sans-serif;
-      outline: none; resize: vertical; min-height: 72px;
-      transition: border-color 0.18s;
-    }
-    .log-form textarea:focus { border-color: var(--gold); }
-    .btn-log {
-      width: 100%; padding: 11px; margin-top: 12px;
-      background: var(--teal); color: #0a0b10; border: none;
-      border-radius: 9px; font-size: 14px; font-weight: 600;
-      font-family: 'Outfit', sans-serif; cursor: pointer;
-      transition: opacity 0.18s;
-    }
-    .btn-log:hover { opacity: 0.88; }
-    .btn-log:disabled { opacity: 0.5; cursor: default; }
-    @media (max-width: 520px) { .log-form-row { flex-direction: column; gap: 12px; } }
-
-    /* practice entries */
-    .log-list { display: flex; flex-direction: column; gap: 10px; }
-    .log-entry {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 14px 18px;
-      display: flex; align-items: flex-start; gap: 16px;
-      transition: border-color 0.2s;
-    }
-    .log-entry:hover { border-color: rgba(94,234,212,0.25); }
-    .log-date {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; padding: 7px 10px; text-align: center;
-      min-width: 50px; flex-shrink: 0;
-    }
-    .log-month { font-size: 9px; font-weight: 700; color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase; }
-    .log-day { font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.1; }
-    .log-body { flex: 1; min-width: 0; padding-top: 2px; }
-    .log-minutes {
-      font-size: 12px; font-weight: 600; color: var(--gold);
-      margin-bottom: 5px; font-family: 'DM Mono', monospace;
-    }
-    .log-notes { font-size: 13px; font-weight: 300; color: var(--text-dim); line-height: 1.65; white-space: pre-wrap; }
-    .btn-del-log {
-      background: none; border: none; color: var(--text-dim);
-      font-size: 16px; cursor: pointer; opacity: 0.35;
-      padding: 2px 6px; transition: all 0.18s; flex-shrink: 0;
-      font-family: 'Outfit', sans-serif; line-height: 1;
-    }
-    .btn-del-log:hover { opacity: 1; color: var(--rose); }
-
-    /* empty / loading */
-    .empty-state { text-align: center; padding: 70px 20px; }
-    .empty-icon { font-size: 52px; margin-bottom: 18px; }
-    .empty-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); margin-bottom: 8px; }
-    .empty-text  { font-size: 13px; font-weight: 300; color: var(--text-dim); line-height: 1.7; }
+    .empty-icon { font-size: 46px; margin-bottom: 16px; opacity: 0.85; }
+    .empty-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); margin-bottom: 9px; }
+    .empty-text  { font-size: 13px; font-weight: 300; color: var(--text-dim); line-height: 1.75; }
     .spinner {
       width: 34px; height: 34px; border-radius: 50%;
-      border: 2px solid var(--border); border-top-color: var(--gold);
-      animation: spin 0.75s linear infinite; margin: 70px auto;
+      border: 2px solid rgba(255,255,255,0.08); border-top-color: var(--gold);
+      animation: spin 0.75s linear infinite; margin: 64px auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
@@ -307,8 +464,9 @@
 ════════════════════════════════════════ -->
 <div id="auth-screen">
   <div class="auth-card">
+    <div class="auth-badge">🎹</div>
     <div class="auth-logo">Piano408 Studios</div>
-    <div class="auth-subtitle">Student Portal — access your personal lesson recaps</div>
+    <div class="auth-subtitle">Student Portal — your lesson recaps and practice log</div>
 
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchTab('signin')">Sign In</button>
@@ -349,7 +507,7 @@
         </div>
         <button type="submit" class="btn-auth" id="reg-btn">Create Account</button>
         <div class="auth-error" id="reg-error"></div>
-        <div class="auth-hint" style="line-height:1.5">Use the email Calvin registered you with.<br>New here? <a onclick="switchTab('signin')">Sign in instead.</a></div>
+        <div class="auth-hint">Use the email Calvin registered you with.<br>Already have an account? <a onclick="switchTab('signin')">Sign in instead.</a></div>
       </form>
     </div>
   </div>
@@ -360,15 +518,20 @@
 ════════════════════════════════════════ -->
 <div id="portal-screen">
   <header class="portal-header">
-    <div class="portal-logo">Piano408 Studios</div>
+    <div class="portal-brand">
+      <div class="portal-mark">🎹</div>
+      <div class="portal-logo">Piano408 Studios</div>
+    </div>
     <div class="portal-right">
       <span class="portal-email" id="portal-email"></span>
+      <div class="portal-avatar" id="portal-avatar">–</div>
       <button class="btn-signout" onclick="firebase.auth().signOut()">Sign out</button>
     </div>
   </header>
+
   <div class="portal-body">
     <h1 class="portal-greeting" id="portal-greeting">Welcome back</h1>
-    <p class="portal-tagline">Your lesson recaps and practice log</p>
+    <p class="portal-tagline" id="portal-tagline">Your lesson recaps and practice log</p>
 
     <div class="portal-tabs">
       <button class="portal-tab active" onclick="switchView('recaps')">Lesson Recaps</button>
@@ -382,20 +545,17 @@
 
     <!-- Practice log view -->
     <div class="portal-view" id="view-practice">
-      <!-- Stats -->
       <div class="stats-grid" id="practice-stats">
-        <div class="stat-card"><div class="stat-value" style="color:var(--gold)">—</div><div class="stat-label">Day Streak</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:var(--teal)">—</div><div class="stat-label">This Week</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:var(--lavender)">—</div><div class="stat-label">Total Sessions</div></div>
+        <div class="stat-card sc-gold"><div class="stat-icon">🔥</div><div><div class="stat-value">—</div><div class="stat-label">Day Streak</div></div></div>
+        <div class="stat-card sc-teal"><div class="stat-icon">⏱</div><div><div class="stat-value">—</div><div class="stat-label">This Week</div></div></div>
+        <div class="stat-card sc-violet"><div class="stat-icon">🎹</div><div><div class="stat-value">—</div><div class="stat-label">Total Sessions</div></div></div>
       </div>
 
-      <!-- Activity chart -->
       <div class="activity-card">
         <div class="activity-title">Last 14 Days</div>
         <div class="activity-bars" id="activity-bars"></div>
       </div>
 
-      <!-- Add entry form -->
       <div class="log-form">
         <form onsubmit="handleAddPractice(event)">
           <div class="log-form-row">
@@ -417,7 +577,6 @@
         </form>
       </div>
 
-      <!-- Entries -->
       <div id="practice-container"><div class="spinner"></div></div>
     </div>
   </div>
@@ -427,12 +586,8 @@
      FIREBASE CONFIG + LOGIC
 ════════════════════════════════════════ -->
 <script>
-// ──────────────────────────────────────────────────────────────────
-//  SETUP: Paste your Firebase config here
-//  Firebase Console → Project Settings → Your apps → Web → SDK setup
-// ──────────────────────────────────────────────────────────────────
 const firebaseConfig = {
-apiKey: "AIzaSyA4D-220YrimNT-Uy8z_v7Ep2JJe-aQTlw",
+  apiKey: "AIzaSyA4D-220YrimNT-Uy8z_v7Ep2JJe-aQTlw",
   authDomain: "piano408studios.firebaseapp.com",
   databaseURL: "https://piano408studios-default-rtdb.firebaseio.com",
   projectId: "piano408studios",
@@ -446,11 +601,19 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// ── Tab switching ─────────────────────────────────────────────────
+// ── Tab switching (auth) ──────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='signin'?i===0:i===1)));
   document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
   document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+
+// ── Time-aware greeting ───────────────────────────────────────────
+function greetingWord() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
 }
 
 // ── Auth state ────────────────────────────────────────────────────
@@ -461,12 +624,18 @@ auth.onAuthStateChanged(async user => {
     authScreen.style.display   = 'none';
     portalScreen.style.display = 'block';
     document.getElementById('portal-email').textContent = user.email;
-    // Load name from Firestore
+
+    let fullName = user.email.split('@')[0];
     try {
       const doc = await db.collection('students').doc(user.uid).get();
-      const name = doc.exists && doc.data().name ? doc.data().name.split(' ')[0] : user.email.split('@')[0];
-      document.getElementById('portal-greeting').textContent = `Welcome back, ${name} 🎹`;
+      if (doc.exists && doc.data().name) fullName = doc.data().name;
     } catch(e) {}
+
+    const first = fullName.split(' ')[0];
+    document.getElementById('portal-greeting').textContent = `${greetingWord()}, ${first}`;
+    document.getElementById('portal-avatar').textContent =
+      fullName.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+
     document.getElementById('pl-date').value = todayStr();
     loadRecaps(user.uid);
     loadPractice(user.uid);
@@ -505,7 +674,6 @@ async function handleRegister(e) {
   btn.textContent = 'Creating account…'; btn.disabled = true;
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
-    // Save student profile to Firestore
     await db.collection('students').doc(cred.user.uid).set({
       name, email, createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -547,9 +715,9 @@ async function loadRecaps(uid) {
     }
 
     let num = snap.size;
-    const cards = snap.docs.map(doc => {
+    const cards = snap.docs.map((doc, i) => {
       const r = doc.data();
-      const d = new Date(r.date + 'T12:00:00'); // avoid timezone offset issues
+      const d = new Date(r.date + 'T12:00:00');
       const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
       const day   = d.getDate();
       const n = num--;
@@ -557,7 +725,7 @@ async function loadRecaps(uid) {
       const embedUrl = getYouTubeEmbedUrl(r.videoUrl);
       const video = r.videoUrl ? (
         embedUrl
-          ? `<div class="recap-video"><iframe src="${embedUrl}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="width:100%;aspect-ratio:16/9;border:none;"></iframe></div>`
+          ? `<div class="recap-video"><iframe src="${embedUrl}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="width:100%;aspect-ratio:16/9;border:none;display:block;"></iframe></div>`
           : `<div class="recap-video"><video controls preload="metadata" playsinline><source src="${esc(r.videoUrl)}" type="video/mp4"></video></div>`
       ) : '';
 
@@ -567,7 +735,7 @@ async function loadRecaps(uid) {
         </div>` : '';
 
       return `
-        <div class="recap-card">
+        <div class="recap-card" style="animation-delay:${Math.min(i,8) * 0.05}s">
           <div class="recap-card-header">
             <div class="date-badge">
               <div class="date-month">${month}</div>
@@ -597,7 +765,6 @@ async function loadRecaps(uid) {
 // ══════════════════════════════════════════════════════════════════
 let practiceEntries = [];
 
-// ── View switching ────────────────────────────────────────────────
 function switchView(view) {
   document.querySelectorAll('.portal-tab').forEach((t,i) =>
     t.classList.toggle('active', (view === 'recaps' ? i === 0 : i === 1)));
@@ -606,10 +773,7 @@ function switchView(view) {
 }
 
 // ── Local date helpers (avoid UTC drift) ──────────────────────────
-function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
+function todayStr() { return dateStrOffset(0); }
 function dateStrOffset(days) {
   const d = new Date();
   d.setDate(d.getDate() + days);
@@ -634,19 +798,14 @@ async function loadPractice(uid) {
   }
 }
 
-// ── Stats: streak, this week, total ───────────────────────────────
+// ── Stats ─────────────────────────────────────────────────────────
 function renderStats() {
-  // Unique practice days
   const days = new Set(practiceEntries.map(e => e.date));
 
-  // Current streak — count back from today (or yesterday if today not logged)
   let streak = 0;
   let cursor = days.has(todayStr()) ? 0 : (days.has(dateStrOffset(-1)) ? -1 : null);
-  if (cursor !== null) {
-    while (days.has(dateStrOffset(cursor))) { streak++; cursor--; }
-  }
+  if (cursor !== null) { while (days.has(dateStrOffset(cursor))) { streak++; cursor--; } }
 
-  // This week's minutes — last 7 days inclusive
   const weekAgo = dateStrOffset(-6);
   const weekMinutes = practiceEntries
     .filter(e => e.date >= weekAgo)
@@ -655,25 +814,32 @@ function renderStats() {
     ? `${Math.floor(weekMinutes/60)}h ${weekMinutes % 60}m`
     : `${weekMinutes}m`;
 
-  const el = document.getElementById('practice-stats');
-  el.innerHTML = `
-    <div class="stat-card">
-      <div class="stat-value" style="color:var(--gold)">${streak}${streak > 0 ? ' 🔥' : ''}</div>
-      <div class="stat-label">Day Streak</div>
+  document.getElementById('practice-stats').innerHTML = `
+    <div class="stat-card sc-gold">
+      <div class="stat-icon">${streak > 0 ? '🔥' : '🌱'}</div>
+      <div>
+        <div class="stat-value">${streak}</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color:var(--teal)">${weekLabel}</div>
-      <div class="stat-label">This Week</div>
+    <div class="stat-card sc-teal">
+      <div class="stat-icon">⏱</div>
+      <div>
+        <div class="stat-value">${weekLabel}</div>
+        <div class="stat-label">This Week</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color:var(--lavender)">${practiceEntries.length}</div>
-      <div class="stat-label">Total Sessions</div>
+    <div class="stat-card sc-violet">
+      <div class="stat-icon">🎹</div>
+      <div>
+        <div class="stat-value">${practiceEntries.length}</div>
+        <div class="stat-label">Total Sessions</div>
+      </div>
     </div>`;
 }
 
 // ── Activity chart: last 14 days ──────────────────────────────────
 function renderActivityChart() {
-  // Sum minutes per day
   const byDay = {};
   practiceEntries.forEach(e => {
     byDay[e.date] = (byDay[e.date] || 0) + (Number(e.minutes) || 0);
@@ -682,17 +848,18 @@ function renderActivityChart() {
   const cols = [];
   for (let i = -13; i <= 0; i++) {
     const ds = dateStrOffset(i);
-    cols.push({ date: ds, minutes: byDay[ds] || 0, d: new Date(ds + 'T12:00:00') });
+    cols.push({ date: ds, minutes: byDay[ds] || 0, d: new Date(ds + 'T12:00:00'), isToday: i === 0 });
   }
 
   const max = Math.max(60, ...cols.map(c => c.minutes));
 
-  document.getElementById('activity-bars').innerHTML = cols.map(c => {
+  document.getElementById('activity-bars').innerHTML = cols.map((c, i) => {
     const pct = c.minutes > 0 ? Math.max(6, (c.minutes / max) * 100) : 0;
     const label = c.d.toLocaleDateString('en-US', { weekday: 'narrow' });
+    const cls = c.minutes === 0 ? 'zero' : (c.isToday ? 'today' : '');
     return `<div class="abar-col">
-      <div class="abar ${c.minutes === 0 ? 'zero' : ''}"
-           style="height:${c.minutes === 0 ? 3 : pct}%"
+      <div class="abar ${cls}"
+           style="height:${c.minutes === 0 ? 4 : pct}%;animation-delay:${i * 0.035}s"
            title="${c.date} — ${c.minutes} min"></div>
       <div class="abar-day">${label}</div>
     </div>`;
@@ -705,7 +872,7 @@ function renderPracticeList() {
 
   if (!practiceEntries.length) {
     container.innerHTML = `
-      <div class="empty-state" style="padding:40px 20px">
+      <div class="empty-state">
         <div class="empty-icon">📓</div>
         <div class="empty-title">No practice logged yet</div>
         <div class="empty-text">Log your first session above.<br>Calvin can see your practice log too — it helps him tailor your lessons.</div>
@@ -713,17 +880,16 @@ function renderPracticeList() {
     return;
   }
 
-  container.innerHTML = `<div class="log-list">${practiceEntries.map(e => {
+  container.innerHTML = `<div class="log-list">${practiceEntries.map((e, i) => {
     const d = new Date(e.date + 'T12:00:00');
     const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
-    const day = d.getDate();
     const mins = Number(e.minutes) || 0;
     const minLabel = mins >= 60 ? `${Math.floor(mins/60)}h ${mins % 60}m` : `${mins} min`;
     return `
-      <div class="log-entry">
+      <div class="log-entry" style="animation-delay:${Math.min(i,10) * 0.04}s">
         <div class="log-date">
           <div class="log-month">${month}</div>
-          <div class="log-day">${day}</div>
+          <div class="log-day">${d.getDate()}</div>
         </div>
         <div class="log-body">
           <div class="log-minutes">⏱ ${minLabel}</div>
@@ -761,6 +927,9 @@ async function handleAddPractice(e) {
     document.getElementById('pl-minutes').value = '';
     document.getElementById('pl-date').value = todayStr();
     await loadPractice(user.uid);
+    btn.textContent = 'Logged ✓';
+    setTimeout(() => { btn.textContent = 'Log Practice Session'; btn.disabled = false; }, 1100);
+    return;
   } catch(err) {
     errEl.textContent = 'Could not save: ' + err.message;
   }
@@ -786,12 +955,11 @@ function getYouTubeEmbedUrl(url) {
   if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
   const shortMatch = url.match(/youtu\.be\/([^?]+)/);
   if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
-  return null; // not a YouTube URL — fall back to <video> tag
+  return null;
 }
 
-// ── PDF opener — base64 data URLs open directly; fallback fetch for legacy URLs ──
+// ── PDF opener ────────────────────────────────────────────────────
 async function openPdf(url, name) {
-  // Base64 data URLs: convert to blob URL (works on iOS Safari + all browsers)
   if (url.startsWith('data:')) {
     try {
       const res     = await fetch(url);
@@ -799,11 +967,10 @@ async function openPdf(url, name) {
       const blobUrl = URL.createObjectURL(blob);
       window.open(blobUrl, '_blank');
     } catch(e) {
-      window.open(url, '_blank'); // last resort
+      window.open(url, '_blank');
     }
     return;
   }
-  // Legacy external URLs — open window synchronously first to bypass popup blocker
   const win = window.open('', '_blank');
   try {
     const resp = await fetch(url);
@@ -812,7 +979,7 @@ async function openPdf(url, name) {
     const blob   = new Blob([buffer], { type: 'application/pdf' });
     win.location.href = URL.createObjectURL(blob);
   } catch(e) {
-    win.location.href = url; // fallback to direct URL
+    win.location.href = url;
   }
 }
 
@@ -822,13 +989,13 @@ function esc(s) {
 }
 function friendlyError(code) {
   return ({
-    'auth/user-not-found':     'No account found with that email.',
-    'auth/wrong-password':     'Incorrect password.',
-    'auth/invalid-credential': 'Email or password is incorrect.',
+    'auth/user-not-found':       'No account found with that email.',
+    'auth/wrong-password':       'Incorrect password.',
+    'auth/invalid-credential':   'Email or password is incorrect.',
     'auth/email-already-in-use': 'An account with this email already exists.',
-    'auth/weak-password':      'Password must be at least 6 characters.',
-    'auth/invalid-email':      'Please enter a valid email address.',
-    'auth/too-many-requests':  'Too many attempts. Please try again later.',
+    'auth/weak-password':        'Password must be at least 6 characters.',
+    'auth/invalid-email':        'Please enter a valid email address.',
+    'auth/too-many-requests':    'Too many attempts. Please try again later.',
   })[code] || 'Something went wrong. Please try again.';
 }
 </script>
