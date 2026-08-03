@@ -600,6 +600,33 @@ const EMAILJS_PUBLIC_KEY  = "zdHUuEJ0puDRxg7dB";
 const PORTAL_URL          = "https://piano408studios.com/portal.html"; // your portal URL
 emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
+// If you create a second EmailJS template for non-recap posts, put its ID here.
+// Leaving it equal to EMAILJS_TEMPLATE_ID reuses the recap template.
+const EMAILJS_TEMPLATE_ID_UPDATE = EMAILJS_TEMPLATE_ID;
+
+// Emails a student that something new was posted. Never throws — a failed
+// send should never lose the thing you just saved.
+async function notifyStudent(uid, itemType, itemTitle) {
+  try {
+    var doc = await db.collection('students').doc(uid).get();
+    if (!doc.exists) return false;
+    var s = doc.data();
+    if (!s.email) return false;
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_UPDATE, {
+      to_email:     s.email,
+      to_name:      s.name ? s.name.split(' ')[0] : s.email,
+      lesson_title: itemTitle,
+      item_type:    itemType,
+      lesson_date:  new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' }),
+      portal_url:   PORTAL_URL,
+    });
+    return true;
+  } catch(e) {
+    console.warn('EmailJS error:', e);
+    return false;
+  }
+}
+
 // PDFs stored as base64 directly in Firestore — no external service needed
 const MAX_PDF_BYTES = 700 * 1024; // 700KB safe limit for Firestore 1MB doc cap
 
@@ -801,14 +828,24 @@ function onDocsSelected(input) {
   prog.style.display = 'block';
 
   var uid = selectedStudentId;
-  var done = 0, failed = [];
+  var done = 0, failed = [], lastName = '';
 
   function next() {
     if (!files.length) {
-      prog.textContent = failed.length
+      var base = failed.length
         ? 'Uploaded ' + done + '. Skipped: ' + failed.join(', ')
         : 'Uploaded ' + done + ' document' + (done === 1 ? '' : 's') + '.';
-      setTimeout(function() { prog.style.display = 'none'; }, 4000);
+      prog.textContent = base;
+
+      if (done > 0) {
+        var label = done === 1 ? 'New document: ' + lastName
+                               : done + ' new documents';
+        notifyStudent(uid, 'document', label).then(function(sent) {
+          prog.textContent = base + (sent ? ' Student notified.' : ' (Email failed.)');
+        });
+      }
+
+      setTimeout(function() { prog.style.display = 'none'; }, 5000);
       loadDocsForStudent(uid);
       return;
     }
@@ -832,6 +869,7 @@ function onDocsSelected(input) {
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         done++;
+        lastName = file.name;
       } catch(err) {
         failed.push(file.name);
       }
@@ -921,8 +959,10 @@ async function handleAddVideo(e) {
       description: desc,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+    var sent = await notifyStudent(selectedStudentId, 'video', 'New video: ' + title);
     closeModal('add-video-modal');
     loadLibraryForStudent(selectedStudentId);
+    if (!sent) console.warn('Video saved but student was not emailed.');
   } catch(err) {
     errEl.textContent = 'Could not add: ' + err.message;
   }
