@@ -65,3 +65,28 @@ Collection: practice
   minutes     number     1–600
   notes       string     what they worked on
   createdAt   timestamp  server timestamp
+
+
+═════════════════════════════════════════════
+VIDEO LIBRARY — ADDITIONAL RULE
+═════════════════════════════════════════════
+
+Add this block alongside the others. No index needed — the library
+sorts by a single field (createdAt), which Firestore indexes automatically.
+
+    match /library/{videoId} {
+      // Any signed-in student can browse the library
+      allow read: if request.auth != null;
+
+      // Only you can add, edit, or remove videos
+      allow create, update, delete: if request.auth != null
+                                    && request.auth.uid == 'IUKVOreLZsSkUkbhgFBq8e6Rc532';
+    }
+
+DATA SHAPE
+  Collection: library
+    title        string     video title
+    youtubeUrl   string     full YouTube URL (watch, youtu.be, embed, or shorts)
+    category     string     Technique | Theory | Voicings | Improv | Repertoire | Other
+    description  string     optional blurb
+    createdAt    timestamp  server timestamp

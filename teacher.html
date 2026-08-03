@@ -210,6 +210,44 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Student panel tabs ────────────────────────── */
+    /* ── Video library ─────────────────────────────── */
+    .sidebar-nav { padding: 0 12px 14px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+    .lib-nav-btn {
+      width: 100%; text-align: left; padding: 10px 12px;
+      background: none; border: 1px solid var(--border); border-radius: 9px;
+      color: var(--text-dim); font-size: 13px; font-family: 'Outfit', sans-serif;
+      cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 9px;
+    }
+    .lib-nav-btn:hover, .lib-nav-btn.active {
+      border-color: var(--lavender); color: var(--lavender); background: rgba(167,139,250,0.08);
+    }
+    .lib-row {
+      display: flex; gap: 14px; align-items: center;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+      transition: border-color 0.18s;
+    }
+    .lib-row:hover { border-color: rgba(167,139,250,0.35); }
+    .lib-thumb {
+      width: 112px; aspect-ratio: 16/9; border-radius: 8px; flex-shrink: 0;
+      background: #000; object-fit: cover; border: 1px solid var(--border); display: block;
+    }
+    .lib-row-body { flex: 1; min-width: 0; }
+    .lib-row-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; line-height: 1.35; }
+    .lib-cat {
+      display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--lavender);
+      background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.25);
+      padding: 3px 9px; border-radius: 20px;
+    }
+    .lib-row-desc { font-size: 12px; color: var(--text-dim); line-height: 1.55; margin-top: 7px; }
+    .lib-select {
+      width: 100%; padding: 11px 14px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 9px; color: var(--text);
+      font-size: 14px; font-family: 'Outfit', sans-serif; outline: none;
+    }
+    .lib-select:focus { border-color: var(--gold); }
+
     .panel-tabs {
       display: flex; gap: 4px; margin-bottom: 22px;
       border-bottom: 1px solid var(--border);
@@ -363,6 +401,9 @@
   <div class="dash-body">
     <!-- Student sidebar -->
     <div class="student-sidebar">
+      <div class="sidebar-nav">
+        <button class="lib-nav-btn" id="lib-nav" onclick="openLibraryPanel()">📹 Video Library</button>
+      </div>
       <div class="sidebar-head">
         <div class="sidebar-label">Students</div>
         <button class="btn-add-student" onclick="openAddStudent()">＋ Add Student</button>
@@ -412,6 +453,46 @@
 <!-- ════════════════════════════════════════
      ADD RECAP MODAL
 ════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════
+     ADD VIDEO MODAL
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="add-video-modal">
+  <div class="modal">
+    <div class="modal-title">Add Video</div>
+    <div class="modal-subtitle">Paste a YouTube link. Every student sees the library.</div>
+    <form onsubmit="handleAddVideo(event)">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="av-title" placeholder="Rootless voicings over ii-V-I" required>
+      </div>
+      <div class="field">
+        <label>YouTube URL</label>
+        <input type="url" id="av-url" placeholder="https://www.youtube.com/watch?v=..." required>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="av-cat" class="lib-select">
+          <option>Technique</option>
+          <option>Theory</option>
+          <option>Voicings</option>
+          <option>Improv</option>
+          <option>Repertoire</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Description (optional)</label>
+        <textarea id="av-desc" rows="3" placeholder="What this lesson covers..." class="lib-select" style="resize:vertical;"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeModal('add-video-modal')">Cancel</button>
+        <button type="submit" class="btn-submit" id="av-btn">Add Video</button>
+      </div>
+      <div class="modal-error" id="av-error"></div>
+    </form>
+  </div>
+</div>
+
 <div class="modal-overlay" id="add-recap-modal">
   <div class="modal">
     <div class="modal-title">New Lesson Recap</div>
@@ -588,6 +669,8 @@ async function selectStudent(uid, name, email) {
 
   // Highlight in sidebar
   document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+  var _libNav = document.getElementById('lib-nav');
+  if (_libNav) _libNav.classList.remove('active');
   const el = document.getElementById('si-' + uid);
   if (el) el.classList.add('active');
 
@@ -619,6 +702,116 @@ async function selectStudent(uid, name, email) {
 }
 
 // ── Panel tab switching ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+//  VIDEO LIBRARY (shared with all students)
+// ══════════════════════════════════════════════════════════════════
+function ytId(url) {
+  if (!url) return null;
+  var m;
+  m = url.match(/[?&]v=([^&]+)/);                  if (m) return m[1];
+  m = url.match(/youtu\.be\/([^?&]+)/);            if (m) return m[1];
+  m = url.match(/youtube\.com\/embed\/([^?&]+)/);  if (m) return m[1];
+  m = url.match(/youtube\.com\/shorts\/([^?&]+)/); if (m) return m[1];
+  return null;
+}
+
+function openLibraryPanel() {
+  selectedStudentId = null;
+  document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+  var nav = document.getElementById('lib-nav');
+  if (nav) nav.classList.add('active');
+
+  document.getElementById('main-panel').innerHTML = `
+    <div class="student-header">
+      <div>
+        <div class="student-title">Video Library</div>
+        <div class="student-email-tag">Shared with every student</div>
+      </div>
+      <button class="btn-new-recap" onclick="openAddVideo()">＋ Add Video</button>
+    </div>
+    <div id="lib-list"><div class="spinner"></div></div>`;
+  loadLibrary();
+}
+
+async function loadLibrary() {
+  var el = document.getElementById('lib-list');
+  if (!el) return;
+  try {
+    var snap = await db.collection('library').orderBy('createdAt', 'desc').get();
+    if (snap.empty) {
+      el.innerHTML = `<div style="padding:40px 0;text-align:center;font-size:13px;color:var(--text-dim);opacity:0.6;line-height:1.7;">No videos yet.<br>Click + Add Video to add your first YouTube link.</div>`;
+      return;
+    }
+    el.innerHTML = snap.docs.map(function(doc) {
+      var v = doc.data();
+      var id = ytId(v.youtubeUrl);
+      var thumb = id ? 'https://img.youtube.com/vi/' + id + '/mqdefault.jpg' : '';
+      return `
+        <div class="lib-row">
+          ${thumb ? `<img class="lib-thumb" src="${thumb}" alt="">` : `<div class="lib-thumb"></div>`}
+          <div class="lib-row-body">
+            <div class="lib-row-title">${esc(v.title)}</div>
+            <span class="lib-cat">${esc(v.category || 'Other')}</span>
+            ${v.description ? `<div class="lib-row-desc">${esc(v.description)}</div>` : ''}
+          </div>
+          <button class="btn-delete-recap" onclick="deleteVideo('${doc.id}')">Delete</button>
+        </div>`;
+    }).join('');
+  } catch(err) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--rose);padding:20px 0;">Error loading library: ${err.message}</div>`;
+  }
+}
+
+function openAddVideo() {
+  document.getElementById('av-title').value = '';
+  document.getElementById('av-url').value   = '';
+  document.getElementById('av-desc').value  = '';
+  document.getElementById('av-error').textContent = '';
+  openModal('add-video-modal');
+}
+
+async function handleAddVideo(e) {
+  e.preventDefault();
+  var title = document.getElementById('av-title').value.trim();
+  var url   = document.getElementById('av-url').value.trim();
+  var cat   = document.getElementById('av-cat').value;
+  var desc  = document.getElementById('av-desc').value.trim();
+  var errEl = document.getElementById('av-error');
+  var btn   = document.getElementById('av-btn');
+
+  errEl.textContent = '';
+  if (!ytId(url)) {
+    errEl.textContent = 'That does not look like a YouTube link. Paste the full URL.';
+    return;
+  }
+
+  btn.textContent = 'Adding...'; btn.disabled = true;
+  try {
+    await db.collection('library').add({
+      title: title,
+      youtubeUrl: url,
+      category: cat,
+      description: desc,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeModal('add-video-modal');
+    loadLibrary();
+  } catch(err) {
+    errEl.textContent = 'Could not add: ' + err.message;
+  }
+  btn.textContent = 'Add Video'; btn.disabled = false;
+}
+
+async function deleteVideo(id) {
+  if (!confirm('Remove this video from the library?')) return;
+  try {
+    await db.collection('library').doc(id).delete();
+    loadLibrary();
+  } catch(err) {
+    alert('Could not delete: ' + err.message);
+  }
+}
+
 function switchPanel(view) {
   document.querySelectorAll('.panel-tab').forEach((t,i) =>
     t.classList.toggle('active', (view === 'recaps' ? i === 0 : i === 1)));
