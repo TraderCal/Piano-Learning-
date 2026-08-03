@@ -732,7 +732,7 @@ auth.onAuthStateChanged(async user => {
     document.getElementById('pl-date').value = todayStr();
     loadRecaps(user.uid);
     loadPractice(user.uid);
-    loadLibrary();
+    loadLibrary(user.uid);
   } else {
     authScreen.style.display   = 'flex';
     portalScreen.style.display = 'none';
@@ -1060,10 +1060,13 @@ function ytId(url) {
   return null;
 }
 
-async function loadLibrary() {
+async function loadLibrary(uid) {
   var container = document.getElementById('library-container');
   try {
-    var snap = await db.collection('library').orderBy('createdAt', 'desc').get();
+    var snap = await db.collection('library')
+      .where('studentUid', '==', uid)
+      .orderBy('createdAt', 'desc')
+      .get();
     libraryVideos = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
     renderFilters();
     renderLibrary();
@@ -1101,7 +1104,7 @@ function renderLibrary() {
       <div class="empty-state">
         <div class="empty-icon">📹</div>
         <div class="empty-title">No videos yet</div>
-        <div class="empty-text">Calvin is putting the library together.<br>Check back soon for lesson videos you can watch any time.</div>
+        <div class="empty-text">Calvin hasn't shared any videos with you yet.<br>They'll show up here when he does.</div>
       </div>`;
     return;
   }

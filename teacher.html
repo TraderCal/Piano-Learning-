@@ -211,16 +211,6 @@
 
     /* ── Student panel tabs ────────────────────────── */
     /* ── Video library ─────────────────────────────── */
-    .sidebar-nav { padding: 0 12px 14px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
-    .lib-nav-btn {
-      width: 100%; text-align: left; padding: 10px 12px;
-      background: none; border: 1px solid var(--border); border-radius: 9px;
-      color: var(--text-dim); font-size: 13px; font-family: 'Outfit', sans-serif;
-      cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 9px;
-    }
-    .lib-nav-btn:hover, .lib-nav-btn.active {
-      border-color: var(--lavender); color: var(--lavender); background: rgba(167,139,250,0.08);
-    }
     .lib-row {
       display: flex; gap: 14px; align-items: center;
       background: var(--surface2); border: 1px solid var(--border);
@@ -401,9 +391,6 @@
   <div class="dash-body">
     <!-- Student sidebar -->
     <div class="student-sidebar">
-      <div class="sidebar-nav">
-        <button class="lib-nav-btn" id="lib-nav" onclick="openLibraryPanel()">📹 Video Library</button>
-      </div>
       <div class="sidebar-head">
         <div class="sidebar-label">Students</div>
         <button class="btn-add-student" onclick="openAddStudent()">＋ Add Student</button>
@@ -459,7 +446,7 @@
 <div class="modal-overlay" id="add-video-modal">
   <div class="modal">
     <div class="modal-title">Add Video</div>
-    <div class="modal-subtitle">Paste a YouTube link. Every student sees the library.</div>
+    <div class="modal-subtitle">Paste a YouTube link. Only this student will see it.</div>
     <form onsubmit="handleAddVideo(event)">
       <div class="field">
         <label>Title</label>
@@ -669,8 +656,6 @@ async function selectStudent(uid, name, email) {
 
   // Highlight in sidebar
   document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
-  var _libNav = document.getElementById('lib-nav');
-  if (_libNav) _libNav.classList.remove('active');
   const el = document.getElementById('si-' + uid);
   if (el) el.classList.add('active');
 
@@ -687,6 +672,7 @@ async function selectStudent(uid, name, email) {
     <div class="panel-tabs">
       <button class="panel-tab active" onclick="switchPanel('recaps')">Lesson Recaps</button>
       <button class="panel-tab" onclick="switchPanel('practice')">Practice Log</button>
+      <button class="panel-tab" onclick="switchPanel('library')">Video Library</button>
     </div>
 
     <div class="panel-view active" id="panel-recaps">
@@ -695,10 +681,18 @@ async function selectStudent(uid, name, email) {
 
     <div class="panel-view" id="panel-practice">
       <div id="practice-panel"><div class="spinner"></div></div>
+    </div>
+
+    <div class="panel-view" id="panel-library">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+        <button class="btn-new-recap" onclick="openAddVideo()">＋ Add Video</button>
+      </div>
+      <div id="lib-list"><div class="spinner"></div></div>
     </div>`;
 
   loadRecapsForStudent(uid);
   loadPracticeForStudent(uid);
+  loadLibraryForStudent(uid);
 }
 
 // ── Panel tab switching ────────────────────────────────────────────
@@ -715,33 +709,20 @@ function ytId(url) {
   return null;
 }
 
-function openLibraryPanel() {
-  selectedStudentId = null;
-  document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
-  var nav = document.getElementById('lib-nav');
-  if (nav) nav.classList.add('active');
-
-  document.getElementById('main-panel').innerHTML = `
-    <div class="student-header">
-      <div>
-        <div class="student-title">Video Library</div>
-        <div class="student-email-tag">Shared with every student</div>
-      </div>
-      <button class="btn-new-recap" onclick="openAddVideo()">＋ Add Video</button>
-    </div>
-    <div id="lib-list"><div class="spinner"></div></div>`;
-  loadLibrary();
-}
-
-async function loadLibrary() {
+async function loadLibraryForStudent(uid) {
   var el = document.getElementById('lib-list');
   if (!el) return;
   try {
-    var snap = await db.collection('library').orderBy('createdAt', 'desc').get();
+    var snap = await db.collection('library')
+      .where('studentUid', '==', uid)
+      .orderBy('createdAt', 'desc')
+      .get();
+
     if (snap.empty) {
-      el.innerHTML = `<div style="padding:40px 0;text-align:center;font-size:13px;color:var(--text-dim);opacity:0.6;line-height:1.7;">No videos yet.<br>Click + Add Video to add your first YouTube link.</div>`;
+      el.innerHTML = `<div style="padding:40px 0;text-align:center;font-size:13px;color:var(--text-dim);opacity:0.6;line-height:1.7;">No videos assigned yet.<br>Click + Add Video to share a YouTube link with ${esc(selectedStudentName.split(' ')[0])}.</div>`;
       return;
     }
+
     el.innerHTML = snap.docs.map(function(doc) {
       var v = doc.data();
       var id = ytId(v.youtubeUrl);
@@ -758,7 +739,7 @@ async function loadLibrary() {
         </div>`;
     }).join('');
   } catch(err) {
-    el.innerHTML = `<div style="font-size:12px;color:var(--rose);padding:20px 0;">Error loading library: ${err.message}</div>`;
+    el.innerHTML = `<div style="font-size:12px;color:var(--rose);padding:20px 0;">Error loading videos: ${err.message}</div>`;
   }
 }
 
@@ -780,6 +761,7 @@ async function handleAddVideo(e) {
   var btn   = document.getElementById('av-btn');
 
   errEl.textContent = '';
+  if (!selectedStudentId) { errEl.textContent = 'Select a student first.'; return; }
   if (!ytId(url)) {
     errEl.textContent = 'That does not look like a YouTube link. Paste the full URL.';
     return;
@@ -788,6 +770,7 @@ async function handleAddVideo(e) {
   btn.textContent = 'Adding...'; btn.disabled = true;
   try {
     await db.collection('library').add({
+      studentUid: selectedStudentId,
       title: title,
       youtubeUrl: url,
       category: cat,
@@ -795,7 +778,7 @@ async function handleAddVideo(e) {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     closeModal('add-video-modal');
-    loadLibrary();
+    loadLibraryForStudent(selectedStudentId);
   } catch(err) {
     errEl.textContent = 'Could not add: ' + err.message;
   }
@@ -806,17 +789,20 @@ async function deleteVideo(id) {
   if (!confirm('Remove this video from the library?')) return;
   try {
     await db.collection('library').doc(id).delete();
-    loadLibrary();
+    loadLibraryForStudent(selectedStudentId);
   } catch(err) {
     alert('Could not delete: ' + err.message);
   }
 }
 
 function switchPanel(view) {
-  document.querySelectorAll('.panel-tab').forEach((t,i) =>
-    t.classList.toggle('active', (view === 'recaps' ? i === 0 : i === 1)));
-  document.getElementById('panel-recaps').classList.toggle('active', view === 'recaps');
+  var order = { recaps: 0, practice: 1, library: 2 };
+  document.querySelectorAll('.panel-tab').forEach(function(t, i) {
+    t.classList.toggle('active', i === order[view]);
+  });
+  document.getElementById('panel-recaps').classList.toggle('active',  view === 'recaps');
   document.getElementById('panel-practice').classList.toggle('active', view === 'practice');
+  document.getElementById('panel-library').classList.toggle('active',  view === 'library');
 }
 
 // ── Local date helpers ─────────────────────────────────────────────

@@ -71,20 +71,32 @@ Collection: practice
 VIDEO LIBRARY — ADDITIONAL RULE
 ═════════════════════════════════════════════
 
-Add this block alongside the others. No index needed — the library
-sorts by a single field (createdAt), which Firestore indexes automatically.
+Videos are assigned per student, same as lesson recaps.
+
+RULE — add alongside the others:
 
     match /library/{videoId} {
-      // Any signed-in student can browse the library
-      allow read: if request.auth != null;
+      // Student sees only videos assigned to them; you see all
+      allow read: if request.auth != null
+                  && (resource.data.studentUid == request.auth.uid
+                      || request.auth.uid == 'IUKVOreLZsSkUkbhgFBq8e6Rc532');
 
       // Only you can add, edit, or remove videos
       allow create, update, delete: if request.auth != null
                                     && request.auth.uid == 'IUKVOreLZsSkUkbhgFBq8e6Rc532';
     }
 
+INDEX — required (same shape as the practice index):
+
+  Firestore Database -> Indexes -> Create Index
+    Collection ID:  library
+    Field 1:        studentUid    Ascending
+    Field 2:        createdAt     Descending
+    Query scope:    Collection
+
 DATA SHAPE
   Collection: library
+    studentUid   string     Firebase Auth UID of the assigned student
     title        string     video title
     youtubeUrl   string     full YouTube URL (watch, youtu.be, embed, or shorts)
     category     string     Technique | Theory | Voicings | Improv | Repertoire | Other
