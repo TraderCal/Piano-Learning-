@@ -838,9 +838,9 @@ function onDocsSelected(input) {
       prog.textContent = base;
 
       if (done > 0) {
-        var label = done === 1 ? 'New document: ' + lastName
-                               : done + ' new documents';
-        notifyStudent(uid, 'document', label).then(function(sent) {
+        var noun  = done === 1 ? 'document' : 'documents';
+        var label = done === 1 ? lastName : done + ' new files';
+        notifyStudent(uid, noun, label).then(function(sent) {
           prog.textContent = base + (sent ? ' Student notified.' : ' (Email failed.)');
         });
       }
@@ -959,7 +959,7 @@ async function handleAddVideo(e) {
       description: desc,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    var sent = await notifyStudent(selectedStudentId, 'video', 'New video: ' + title);
+    var sent = await notifyStudent(selectedStudentId, 'video', title);
     closeModal('add-video-modal');
     loadLibraryForStudent(selectedStudentId);
     if (!sent) console.warn('Video saved but student was not emailed.');
@@ -1314,6 +1314,7 @@ async function handleAddRecap(e) {
         to_email:     studentData.email,
         to_name:      firstName,
         lesson_title: title,
+        item_type:    'lesson recap',
         lesson_date:  formattedDate,
         portal_url:   PORTAL_URL,
       });
