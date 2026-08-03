@@ -1263,16 +1263,37 @@ function getYouTubeEmbedUrl(url) {
 }
 
 // ── PDF opener ────────────────────────────────────────────────────
+// Convert a base64 data URL to a Blob synchronously — no await, so the
+// window.open below stays inside the click gesture and isn't popup-blocked.
+function dataUrlToBlob(dataUrl) {
+  var parts = dataUrl.split(',');
+  var mime  = (parts[0].match(/:(.*?);/) || [null, 'application/pdf'])[1];
+  var bin   = atob(parts[1]);
+  var arr   = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 async function openPdf(url, name) {
   if (url.startsWith('data:')) {
+    var blobUrl;
     try {
-      const res     = await fetch(url);
-      const blob    = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
+      blobUrl = URL.createObjectURL(dataUrlToBlob(url));
     } catch(e) {
-      window.open(url, '_blank');
+      alert('This document could not be opened. It may not have uploaded correctly.');
+      return;
     }
+    var opened = window.open(blobUrl, '_blank');
+    if (!opened) {
+      // Popup blocked — fall back to a direct download
+      var a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = name || 'document.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 60000);
     return;
   }
   const win = window.open('', '_blank');
