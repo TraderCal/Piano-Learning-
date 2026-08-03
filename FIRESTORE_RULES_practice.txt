@@ -102,3 +102,35 @@ DATA SHAPE
     category     string     Technique | Theory | Voicings | Improv | Repertoire | Other
     description  string     optional blurb
     createdAt    timestamp  server timestamp
+
+
+═════════════════════════════════════════════
+DOCUMENTS — ADDITIONAL RULE + INDEX
+═════════════════════════════════════════════
+
+PDFs are stored as base64 inside the Firestore doc (same approach as
+lesson recap attachments). 700KB per file — the uploader enforces it.
+
+RULE:
+
+    match /documents/{docId} {
+      allow read: if isTeacher()
+                  || (request.auth != null && resource.data.studentUid == request.auth.uid);
+      allow create, update, delete: if isTeacher();
+    }
+
+INDEX:
+
+  Firestore Database -> Indexes -> Create Index
+    Collection ID:  documents
+    Field 1:        studentUid    Ascending
+    Field 2:        createdAt     Descending
+    Query scope:    Collection
+
+DATA SHAPE
+  Collection: documents
+    studentUid   string     Firebase Auth UID of the assigned student
+    name         string     original filename
+    size         number     bytes
+    dataUrl      string     base64 data URL of the PDF
+    createdAt    timestamp  server timestamp

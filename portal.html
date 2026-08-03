@@ -514,6 +514,38 @@
     }
     .vl-modal-close:hover { border-color: rgba(251,113,133,0.5); color: var(--rose); background: rgba(251,113,133,0.08); }
 
+    /* ── Documents ───────────────────────────────── */
+    .doc-list { display: flex; flex-direction: column; gap: 11px; }
+    .doc-item {
+      background: linear-gradient(155deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid var(--border); border-radius: 15px;
+      padding: 16px 19px; display: flex; align-items: center; gap: 16px;
+      cursor: pointer; text-align: left; width: 100%;
+      font-family: 'Outfit', sans-serif;
+      transition: transform 0.25s var(--ease), border-color 0.25s, box-shadow 0.25s;
+      animation: fadeUp 0.45s var(--ease) both;
+    }
+    .doc-item:hover {
+      transform: translateY(-2px); border-color: rgba(94,234,212,0.35);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    }
+    .doc-item-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 19px;
+      background: rgba(94,234,212,0.1); border: 1px solid rgba(94,234,212,0.22);
+      transition: background 0.25s var(--ease);
+    }
+    .doc-item:hover .doc-item-icon { background: rgba(94,234,212,0.2); }
+    .doc-item-body { flex: 1; min-width: 0; }
+    .doc-item-name {
+      font-size: 14.5px; font-weight: 600; color: var(--text); line-height: 1.4;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .doc-item-meta { font-size: 11.5px; color: var(--text-mute); margin-top: 5px; font-family: 'DM Mono', monospace; }
+    .doc-item-open { font-size: 12px; color: var(--teal); flex-shrink: 0; opacity: 0; transition: opacity 0.25s var(--ease); }
+    .doc-item:hover .doc-item-open { opacity: 1; }
+    @media (hover: none) { .doc-item-open { opacity: 0.6; } }
+
     /* ── Empty / loading ─────────────────────────── */
     .empty-state {
       text-align: center; padding: 62px 24px;
@@ -612,6 +644,7 @@
       <button class="portal-tab active" onclick="switchView('recaps')">Lesson Recaps</button>
       <button class="portal-tab" onclick="switchView('practice')">Practice Log</button>
       <button class="portal-tab" onclick="switchView('library')">Video Library</button>
+      <button class="portal-tab" onclick="switchView('docs')">Documents</button>
     </div>
 
     <!-- Recaps view -->
@@ -660,6 +693,11 @@
     <div class="portal-view" id="view-library">
       <div class="vl-filters" id="vl-filters"></div>
       <div id="library-container"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Documents view -->
+    <div class="portal-view" id="view-docs">
+      <div id="docs-container"><div class="spinner"></div></div>
     </div>
   </div>
 </div>
@@ -733,6 +771,7 @@ auth.onAuthStateChanged(async user => {
     loadRecaps(user.uid);
     loadPractice(user.uid);
     loadLibrary(user.uid);
+    loadDocs(user.uid);
   } else {
     authScreen.style.display   = 'flex';
     portalScreen.style.display = 'none';
@@ -860,13 +899,14 @@ async function loadRecaps(uid) {
 let practiceEntries = [];
 
 function switchView(view) {
-  var order = { recaps: 0, practice: 1, library: 2 };
+  var order = { recaps: 0, practice: 1, library: 2, docs: 3 };
   document.querySelectorAll('.portal-tab').forEach(function(t, i) {
     t.classList.toggle('active', i === order[view]);
   });
-  document.getElementById('view-recaps').classList.toggle('active',  view === 'recaps');
+  document.getElementById('view-recaps').classList.toggle('active',   view === 'recaps');
   document.getElementById('view-practice').classList.toggle('active', view === 'practice');
   document.getElementById('view-library').classList.toggle('active',  view === 'library');
+  document.getElementById('view-docs').classList.toggle('active',     view === 'docs');
 }
 
 // ── Local date helpers (avoid UTC drift) ──────────────────────────
@@ -1152,6 +1192,64 @@ function handleVlModalClick(e) {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape' && document.getElementById('vl-modal').classList.contains('open')) closeVideo();
 });
+
+// ══════════════════════════════════════════════════════════════════
+//  DOCUMENTS
+// ══════════════════════════════════════════════════════════════════
+function fmtBytes(b) {
+  if (!b) return '';
+  return b < 1024 * 1024 ? Math.round(b / 1024) + ' KB'
+                         : (b / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+async function loadDocs(uid) {
+  var container = document.getElementById('docs-container');
+  try {
+    var snap = await db.collection('documents')
+      .where('studentUid', '==', uid)
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    if (snap.empty) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📄</div>
+          <div class="empty-title">No documents yet</div>
+          <div class="empty-text">Sheet music, worksheets, and handouts Calvin shares<br>with you will appear here.</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="doc-list">${snap.docs.map(function(doc, i) {
+      var d = doc.data();
+      var when = d.createdAt && d.createdAt.toDate
+        ? d.createdAt.toDate().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+        : '';
+      return `
+        <button class="doc-item" style="animation-delay:${Math.min(i,10) * 0.04}s"
+                onclick="openDoc('${doc.id}')">
+          <div class="doc-item-icon">📄</div>
+          <div class="doc-item-body">
+            <div class="doc-item-name">${esc(d.name)}</div>
+            <div class="doc-item-meta">${fmtBytes(d.size)}${when ? ' · ' + when : ''}</div>
+          </div>
+          <div class="doc-item-open">Open ↗</div>
+        </button>`;
+    }).join('')}</div>`;
+
+    portalDocs = {};
+    snap.docs.forEach(function(doc) { portalDocs[doc.id] = doc.data(); });
+  } catch(err) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-text" style="color:var(--rose)">Could not load documents: ${err.message}</div></div>`;
+  }
+}
+
+var portalDocs = {};
+
+function openDoc(id) {
+  var d = portalDocs[id];
+  if (d && d.dataUrl) openPdf(d.dataUrl, d.name);
+}
 
 // ── YouTube embed helper ──────────────────────────────────────────
 function getYouTubeEmbedUrl(url) {

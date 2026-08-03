@@ -211,6 +211,32 @@
 
     /* ── Student panel tabs ────────────────────────── */
     /* ── Video library ─────────────────────────────── */
+    .doc-row {
+      display: flex; gap: 14px; align-items: center;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 13px 16px; margin-bottom: 10px;
+      transition: border-color 0.18s;
+    }
+    .doc-row:hover { border-color: rgba(94,234,212,0.35); }
+    .doc-icon {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      background: rgba(94,234,212,0.1); border: 1px solid rgba(94,234,212,0.22);
+    }
+    .doc-row-body { flex: 1; min-width: 0; }
+    .doc-row-name {
+      font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.35;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .doc-row-meta { font-size: 11px; color: var(--text-dim); margin-top: 4px; font-family: 'DM Mono', monospace; }
+    .doc-drop {
+      border: 2px dashed var(--border); border-radius: 12px;
+      padding: 26px 20px; text-align: center; cursor: pointer;
+      transition: all 0.18s; color: var(--text-dim); font-size: 13px; margin-bottom: 18px;
+    }
+    .doc-drop:hover { border-color: var(--teal); color: var(--teal); background: rgba(94,234,212,0.04); }
+    .doc-drop input { display: none; }
+
     .lib-row {
       display: flex; gap: 14px; align-items: center;
       background: var(--surface2); border: 1px solid var(--border);
@@ -673,6 +699,7 @@ async function selectStudent(uid, name, email) {
       <button class="panel-tab active" onclick="switchPanel('recaps')">Lesson Recaps</button>
       <button class="panel-tab" onclick="switchPanel('practice')">Practice Log</button>
       <button class="panel-tab" onclick="switchPanel('library')">Video Library</button>
+      <button class="panel-tab" onclick="switchPanel('docs')">Documents</button>
     </div>
 
     <div class="panel-view active" id="panel-recaps">
@@ -688,11 +715,23 @@ async function selectStudent(uid, name, email) {
         <button class="btn-new-recap" onclick="openAddVideo()">＋ Add Video</button>
       </div>
       <div id="lib-list"><div class="spinner"></div></div>
+    </div>
+
+    <div class="panel-view" id="panel-docs">
+      <label class="doc-drop">
+        <input type="file" accept=".pdf" multiple onchange="onDocsSelected(this)">
+        <div style="font-size:24px;margin-bottom:7px;">📄</div>
+        <div>Click to upload PDFs for this student</div>
+        <div style="font-size:11px;margin-top:5px;opacity:0.65;">Max 700KB each</div>
+      </label>
+      <div id="doc-progress" style="display:none;font-size:12px;color:var(--teal);margin-bottom:14px;"></div>
+      <div id="doc-list"><div class="spinner"></div></div>
     </div>`;
 
   loadRecapsForStudent(uid);
   loadPracticeForStudent(uid);
   loadLibraryForStudent(uid);
+  loadDocsForStudent(uid);
 }
 
 // ── Panel tab switching ────────────────────────────────────────────
@@ -707,6 +746,111 @@ function ytId(url) {
   m = url.match(/youtube\.com\/embed\/([^?&]+)/);  if (m) return m[1];
   m = url.match(/youtube\.com\/shorts\/([^?&]+)/); if (m) return m[1];
   return null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  DOCUMENTS (per student, base64 in Firestore)
+// ══════════════════════════════════════════════════════════════════
+function fmtBytes(b) {
+  if (!b) return '';
+  return b < 1024 * 1024 ? Math.round(b / 1024) + ' KB'
+                         : (b / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+async function loadDocsForStudent(uid) {
+  var el = document.getElementById('doc-list');
+  if (!el) return;
+  try {
+    var snap = await db.collection('documents')
+      .where('studentUid', '==', uid)
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    if (snap.empty) {
+      el.innerHTML = `<div style="padding:34px 0;text-align:center;font-size:13px;color:var(--text-dim);opacity:0.6;line-height:1.7;">No documents yet.<br>Upload a PDF above to share it with ${esc(selectedStudentName.split(' ')[0])}.</div>`;
+      return;
+    }
+
+    el.innerHTML = snap.docs.map(function(doc) {
+      var d = doc.data();
+      var when = d.createdAt && d.createdAt.toDate
+        ? d.createdAt.toDate().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+        : '';
+      return `
+        <div class="doc-row">
+          <div class="doc-icon">📄</div>
+          <div class="doc-row-body">
+            <div class="doc-row-name">${esc(d.name)}</div>
+            <div class="doc-row-meta">${fmtBytes(d.size)}${when ? ' · ' + when : ''}</div>
+          </div>
+          <button class="btn-delete-recap" onclick="deleteDoc('${doc.id}')">Delete</button>
+        </div>`;
+    }).join('');
+  } catch(err) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--rose);padding:20px 0;">Error loading documents: ${err.message}</div>`;
+  }
+}
+
+function onDocsSelected(input) {
+  var files = Array.from(input.files || []);
+  input.value = '';
+  if (!files.length) return;
+  if (!selectedStudentId) { alert('Select a student first.'); return; }
+
+  var prog = document.getElementById('doc-progress');
+  prog.style.display = 'block';
+
+  var uid = selectedStudentId;
+  var done = 0, failed = [];
+
+  function next() {
+    if (!files.length) {
+      prog.textContent = failed.length
+        ? 'Uploaded ' + done + '. Skipped: ' + failed.join(', ')
+        : 'Uploaded ' + done + ' document' + (done === 1 ? '' : 's') + '.';
+      setTimeout(function() { prog.style.display = 'none'; }, 4000);
+      loadDocsForStudent(uid);
+      return;
+    }
+    var file = files.shift();
+    prog.textContent = 'Uploading ' + file.name + '...';
+
+    if (file.size > MAX_PDF_BYTES) {
+      failed.push(file.name + ' (too large)');
+      next();
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = async function() {
+      try {
+        await db.collection('documents').add({
+          studentUid: uid,
+          name: file.name,
+          size: file.size,
+          dataUrl: reader.result,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        done++;
+      } catch(err) {
+        failed.push(file.name);
+      }
+      next();
+    };
+    reader.onerror = function() { failed.push(file.name); next(); };
+    reader.readAsDataURL(file);
+  }
+  next();
+}
+
+async function deleteDoc(id) {
+  if (!confirm('Delete this document?')) return;
+  try {
+    await db.collection('documents').doc(id).delete();
+    loadDocsForStudent(selectedStudentId);
+  } catch(err) {
+    alert('Could not delete: ' + err.message);
+  }
 }
 
 async function loadLibraryForStudent(uid) {
@@ -796,13 +940,14 @@ async function deleteVideo(id) {
 }
 
 function switchPanel(view) {
-  var order = { recaps: 0, practice: 1, library: 2 };
+  var order = { recaps: 0, practice: 1, library: 2, docs: 3 };
   document.querySelectorAll('.panel-tab').forEach(function(t, i) {
     t.classList.toggle('active', i === order[view]);
   });
-  document.getElementById('panel-recaps').classList.toggle('active',  view === 'recaps');
+  document.getElementById('panel-recaps').classList.toggle('active',   view === 'recaps');
   document.getElementById('panel-practice').classList.toggle('active', view === 'practice');
   document.getElementById('panel-library').classList.toggle('active',  view === 'library');
+  document.getElementById('panel-docs').classList.toggle('active',     view === 'docs');
 }
 
 // ── Local date helpers ─────────────────────────────────────────────
